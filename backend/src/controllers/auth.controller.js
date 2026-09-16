@@ -1,0 +1,225 @@
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { env } from "../config/env.js";
+import pool from "../config/mysql.js";
+
+// Normal registration
+const register = async (req, res) => {
+  try {
+    const { email, password, displayName, profile_photo, education_background, bio, interests } = req.body;
+
+    if (!email || !password || !displayName) {
+      return res.status(400).json({
+        message: "Email, password, and displayName are required",
+      });
+    }
+
+    // Check if learner already exists
+    const [existingLearnerRows] = await pool.query(
+      "SELECT * FROM learner WHERE email = ?",
+      [email]
+    );
+    if (existingLearnerRows.length > 0) {
+      return res.status(409).json({
+        message: "Learner already exists",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Insert new learner
+    const [result] = await pool.query(
+      `INSERT INTO learner (email, password, name, role, profile_photo, education_background, bio, interests) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        email,
+        hashedPassword,
+        displayName,
+        "learner",
+        profile_photo || null,
+        education_background || null,
+        bio || null,
+        interests ? JSON.stringify(interests) : null
+      ]
+    );
+
+    // Retrieve the newly created learner
+    const learnerId = result.insertId;
+    const [rows] = await pool.query("SELECT * FROM learner WHERE id = ?", [learnerId]);
+    const learner = rows[0];
+
+    // Generate JWT token for user after registration
+    const token = jwt.sign(
+      {
+        id: learner.id.toString(),
+        displayName: learner.name,
+        email: learner.email,
+        role: learner.role,
+      },
+      env.jwt_secret,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    // Set cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: env.nodeEnv === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+    });
+
+    return res.status(201).json({
+      message: "Learner registered successfully",
+      token,
+    });
+  } catch (err) {
+    console.error("Registration error:", err);
+    return res.status(500).json({
+      message: "Server error during registration",
+    });
+  }
+};
+
+// Normal email/password login
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password are required",
+      });
+    }
+
+    const [rows] = await pool.query("SELECT * FROM learner WHERE email = ?", [email]);
+    const learner = rows[0];
+
+    if (!learner) {
+      return res.status(401).json({
+        message: "Invalid credentials",
+      });
+    }
+
+    if (!learner.password) {
+      return res.status(400).json({
+        message: "This account uses Google login. Please continue with Google.",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, learner.password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        message: "Invalid credentials",
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: learner.id.toString(),
+        displayName: learner.name,
+        email: learner.email,
+        role: learner.role,
+      },
+      env.jwt_secret,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    // Set cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: env.nodeEnv === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+    });
+
+    return res.json({
+      message: "learner logged in successfully"
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    return res.status(500).json({
+      message: "Server error during login",
+    });
+  }
+};
+
+// Google OAuth callback
+const googleCallback = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Google authentication failed",
+      });
+    }
+
+    const googleUser = req.user;
+    console.log("Google user:", googleUser);
+
+    const email = googleUser.emails?.[0]?.value;
+
+    if (!email) {
+      return res.status(400).json({
+        message: "Google account email not available",
+      });
+    }
+
+    // Find learner by email
+    const [rows] = await pool.query("SELECT * FROM learner WHERE email = ?", [email]);
+    let learner = rows[0];
+
+    // If learner doesn't exist, create one
+    if (!learner) {
+      const [result] = await pool.query(
+        `INSERT INTO learner (email, name, password, profile_photo, role) VALUES (?, ?, ?, ?, ?)`,
+        [
+          email,
+          googleUser.displayName || null,
+          "",
+          googleUser.photos?.[0]?.value || null,
+          "learner",
+        ]
+      );
+      const learnerId = result.insertId;
+      const [createdRows] = await pool.query("SELECT * FROM learner WHERE id = ?", [learnerId]);
+      learner = createdRows[0];
+    }
+
+    // Create YOUR application's JWT
+    const token = jwt.sign(
+      {
+        id: learner.id.toString(),
+        displayName: learner.name,
+        email: learner.email,
+        role: learner.role,
+      },
+      env.jwt_secret,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    // Set cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: env.nodeEnv === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+    });
+
+    return res.json({
+      message: "Logged in Successfully"
+    });
+  } catch (err) {
+    console.error("Google authentication error:", err);
+
+    return res.status(500).json({
+      message: "Server error during Google authentication",
+    });
+  }
+};
+
+export { register, login, googleCallback };
