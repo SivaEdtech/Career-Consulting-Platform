@@ -210,7 +210,7 @@ const googleCallback = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
     });
 
-    return res.json({
+    return res.status(200).json({
       message: "Logged in Successfully"
     });
   } catch (err) {
@@ -222,4 +222,115 @@ const googleCallback = async (req, res) => {
   }
 };
 
-export { register, login, googleCallback };
+const logout = (req, res) => {
+  try {
+
+    const token = req.cookies.token
+
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    });
+    return res.status(200).json({ message: "Logged out successfully" });
+  } catch (err) {
+    console.error("Logout error:", err);
+    return res.status(500).json({ message: "Server error during logout" });
+  }
+};
+
+
+const getLearner = (req, res) => {
+  try {
+    // Assume JWT-based authentication middleware attaches user info to req.user
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized: No user found" });
+    }
+
+  
+    const { id, displayName, email, role } = user;
+    return res.status(200).json({
+      id,
+      displayName,
+      email,
+      role
+    });
+  } catch (err) {
+    console.error("GetMe error:", err);
+    return res.status(500).json({ message: "Server error during getLearner" });
+  }
+};
+
+
+const updateUser = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized: No user found" });
+    }
+
+    const allowedUpdates = {
+      name: req.body.displayName,
+      profile_photo: req.body.profile_photo,
+      education_background: req.body.education_background,
+      bio: req.body.bio,
+      interests: req.body.interests ? JSON.stringify(req.body.interests) : undefined
+    };
+
+
+    if (req.body.displayName && !req.body.profile_photo) {
+      const initials = encodeURIComponent(req.body.displayName);
+      allowedUpdates.profile_photo = `https://api.dicebear.com/7.x/initials/svg?seed=${initials}`;
+    }
+
+    
+    Object.keys(allowedUpdates).forEach(
+      (key) => allowedUpdates[key] === undefined && delete allowedUpdates[key]
+    );
+
+    if (Object.keys(allowedUpdates).length === 0) {
+      return res.status(400).json({ message: "No valid fields to update." });
+    }
+
+    // Prepare SET clause and values
+    const setClause = Object.keys(allowedUpdates).map(field => `${field} = ?`).join(", ");
+    const values = Object.values(allowedUpdates);
+    values.push(userId);
+
+    // Do the update
+    const [updateResult] = await pool.query(
+      `UPDATE learner SET ${setClause} WHERE id = ?`,
+      values
+    );
+
+    if (!updateResult.affectedRows) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Fetch updated user
+    const [rows] = await pool.query(
+      "SELECT id, email, name as displayName, profile_photo, education_background, bio, interests, role FROM learner WHERE id = ?",
+      [userId]
+    );
+
+    if (!rows.length) {
+      return res.status(404).json({ message: "User not found after update." });
+    }
+
+    return res.status(200).json({
+      message: "User updated successfully",
+      updatedUser: rows[0]
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      message: "Error while updating user info",
+    });
+  }
+};
+
+
+
+
+export { register, login, googleCallback, logout , getLearner, updateUser};
