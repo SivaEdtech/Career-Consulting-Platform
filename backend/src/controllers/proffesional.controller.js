@@ -3,25 +3,15 @@ import pool from "../config/mysql.js";
 
 const getProfessional = async (req, res) => {
     try {
-        const userId = req.user?.id;
+        const account_id = req.user?.account_id;
 
-        if (!userId) {
+        if (!account_id) {
             return res.status(401).json({ message: "Unauthorized: No user found" });
         }
 
         const [rows] = await pool.query(
-            `SELECT 
-          name, 
-          email, 
-          profile_photo, 
-          bio, 
-          languages, 
-          role, 
-          number_of_consultations, 
-          consulting_price 
-        FROM professional 
-        WHERE id = ?`,
-            [userId]
+            `SELECT * FROM professional WHERE account_id = ?`,
+            [account_id]
         );
 
         if (rows.length === 0) {
@@ -44,8 +34,8 @@ const getProfessional = async (req, res) => {
 
 const updateProfessional = async (req, res) => {
     try {
-        const userId = req.user?.id;
-        if (!userId) {
+        const account_id = req.user?.account_id;
+        if (!account_id) {
             return res.status(401).json({ message: "Unauthorized: No user found" });
         }
 
@@ -77,33 +67,22 @@ const updateProfessional = async (req, res) => {
             .map((field) => `${field} = ?`)
             .join(", ");
         const values = Object.values(allowedUpdates);
-        values.push(userId);
+        values.push(account_id);
 
         // Attempt the update in the professional table
         const [updateResult] = await pool.query(
-            `UPDATE professional SET ${setClause} WHERE id = ?`,
+            `UPDATE professionals SET ${setClause} WHERE account_id = ?`,
             values
         );
 
         if (!updateResult.affectedRows) {
-            return res.status(404).json({ message: "Professional user not found" });
+            return res.status(404).json({ message: "Professional not found" });
         }
 
         // Fetch updated professional user
         const [rows] = await pool.query(
-            `SELECT 
-        id,
-        name, 
-        email, 
-        profile_photo, 
-        bio, 
-        languages, 
-        role, 
-        number_of_consultations, 
-        consulting_price 
-      FROM professional 
-      WHERE id = ?`,
-            [userId]
+            `SELECT * FROM professionals WHERE account_id = ?`,
+            [account_id]
         );
 
         if (!rows.length) {
@@ -128,17 +107,7 @@ const getAllProfessionals = async (req, res) => {
     try {
         // Get all professionals from the table
         const [rows] = await pool.query(
-            `SELECT 
-        id,
-        name,
-        profile_photo,
-        bio,
-        languages,
-        role,
-        number_of_consultations,
-        consulting_price
-
-      FROM professional`
+            `SELECT * FROM professionals`
         );
 
         const professionals = rows.map((professional) => {
@@ -171,17 +140,7 @@ const getProfessionalById = async (req, res) => {
         }
 
         const [rows] = await pool.query(
-            `SELECT 
-                id,
-                name,
-                profile_photo,
-                bio,
-                languages,
-                role,
-                number_of_consultations,
-                consulting_price
-             FROM professional
-             WHERE id = ?`,
+            `SELECT * FROM professionals WHERE id = ?`,
             [professionalId]
         );
 

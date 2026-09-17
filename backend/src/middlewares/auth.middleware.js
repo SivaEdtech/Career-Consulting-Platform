@@ -25,18 +25,18 @@ const authUser = async (req, res, next) => {
 
    
     const [rows] = await pool.query(
-      "SELECT id, name as displayName, email, role FROM learner WHERE id = ?",
+      "SELECT account_id, email, role FROM accounts WHERE account_id = ?",
       [decoded.id]
     );
-    const user = rows[0];
+    const account = rows[0];
 
-    if (!user) {
+    if (!account) {
       return res.status(404).json({
         message: "User not found",
       });
     }
 
-    req.user = user;
+    req.user = account;
     next();
   } catch (err) {
     return res.status(500).json({
