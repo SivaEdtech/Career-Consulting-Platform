@@ -6,7 +6,7 @@ import pool from "../config/mysql.js";
 // Normal registration
 const register = async (req, res) => {
   try {
-    const { email, password, role, name } = req.body;
+    const { email, password, role, displayName } = req.body;
 
     // Validate required fields
     if (!email || !password || !role) {
@@ -50,14 +50,14 @@ const register = async (req, res) => {
     if (role === "learner") {
       await pool.query(
         "INSERT INTO learner ( account_id, name) VALUES (?, ?)",
-        [accountId, name || null]
+        [accountId, displayName || null]
       );
     }
 
     if (role === "professional") {
       await pool.query(
         "INSERT INTO professionals (account_id, name) VALUES (?, ?)",
-        [accountId, name || null]
+        [accountId, displayName || null]
       );
     }
 
@@ -118,7 +118,7 @@ const login = async (req, res) => {
 
     if (!account) {
       return res.status(401).json({
-        message: "Invalid credentials",
+        message: "Account does not exists",
       });
     }
 
@@ -189,7 +189,7 @@ const googleCallback = async (req, res) => {
     console.log("Google user:", googleUser);
 
     const email = googleUser.emails?.[0]?.value;
-
+    
     if (!email) {
       return res.status(400).json({
         message: "Google account email not available",
