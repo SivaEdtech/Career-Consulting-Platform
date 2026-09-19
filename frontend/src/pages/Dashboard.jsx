@@ -201,6 +201,8 @@ export default function Dashboard() {
     // Session Detail Modal State
     const [sessionDetailModal, setSessionDetailModal] = useState({ isOpen: false, session: null });
 
+
+
     // Filter Mentors
     const filteredMentors = useMemo(() => {
         return mentors.filter(m => {
@@ -214,6 +216,27 @@ export default function Dashboard() {
         });
     }, [mentors, selectedDomain, searchQuery]);
 
+    // Function to call the backend API to create a slot with newSlotDate and newSlotTime
+    const createSlotAPI = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/slots`, {
+                time:newSlotTime,
+                date:newSlotDate
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to create slot');
+            }
+
+            const data = await response.json();
+            return data.slot;
+        } catch (err) {
+            console.error('Error creating slot:', err);
+            throw err;
+        }
+    };
     // Handle Confirm Booking
     const handleConfirmBooking = () => {
         if (!selectedSlot || !bookingModal.mentor) return;
@@ -790,7 +813,8 @@ function MentorDashboardView({
     newSlotTime,
     setNewSlotTime,
     reviews,
-    onViewDetails
+    onViewDetails,
+    createSlotAPI
 }) {
     return (
         <div className="space-y-8">
@@ -868,7 +892,7 @@ function MentorDashboardView({
                     </div>
 
                     {/* Add Slot Form */}
-                    <form onSubmit={onAddSlot} className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <form onSubmit={createSlotAPI} className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
                         <p className="text-xs font-bold uppercase tracking-wider text-gray-700">Add New Slot</p>
                         <div className="space-y-2">
                             <div>
@@ -906,6 +930,7 @@ function MentorDashboardView({
                             <span>Add Available Slot</span>
                         </button>
                     </form>
+           
 
                     {/* Slots List */}
                     <div className="space-y-2.5">
