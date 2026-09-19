@@ -83,8 +83,11 @@ const register = async (req, res) => {
     });
 
     return res.status(201).json({
-      message: "Account registered successfully",
-      token,
+      data: {
+        accountId,
+        email,
+        role
+      }
     });
 
   } catch (err) {
@@ -162,9 +165,11 @@ const login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    // Exclude password from response for security
+    const { account_id, role } = rows[0];
+
     return res.status(200).json({
-      message: "Account logged in successfully",
-      token,
+      data: { account_id, email, role }
     });
 
   } catch (err) {
@@ -253,10 +258,9 @@ const googleCallback = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(200).json({
-      message: "Account logged in successfully",
-      token,
-    });
+    return res.redirect(
+      `${env.frontend_url}/dashboard`
+  );
   } catch (err) {
     console.error("Google authentication error:", err);
 
@@ -283,5 +287,37 @@ const logout = (req, res) => {
   }
 };
 
+const getUser = async (req, res) => {
+  try {
+    const account_id = req.user?.account_id;
 
-export { register, login, googleCallback, logout };
+    if (!account_id) {
+      return res.status(401).json({ message: "Unauthorized: No user found" });
+    }
+
+    // Fetch the user data from the accounts table
+    const [rows] = await pool.query(
+      "SELECT * FROM accounts WHERE account_id = ?",
+      [account_id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    return res.status(200).json({
+      message: "User fetched successfully",
+      user: rows[0],
+    });
+  } catch (err) {
+    console.error("Error fetching user:", err);
+    return res.status(500).json({
+      message: "Error fetching user information",
+      error: err.message,
+    });
+  }
+};
+
+
+
+export { register, login, googleCallback, logout, getUser };

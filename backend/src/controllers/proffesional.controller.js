@@ -1,4 +1,3 @@
-import { env } from "../config/env.js";
 import pool from "../config/mysql.js";
 
 const getProfessional = async (req, res) => {

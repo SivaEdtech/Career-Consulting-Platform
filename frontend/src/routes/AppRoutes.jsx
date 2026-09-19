@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom"
 import LandingPage from "../pages/LandingPage"
 import Dashboard from "../pages/Dashboard"
+import Profile from "../pages/Profile"
 
 const AppRoutes = () => {
   return (
@@ -8,6 +9,8 @@ const AppRoutes = () => {
 
         <Route path="/" element={<LandingPage/>}></Route>
         <Route path="/dashboard" element={<Dashboard/>}></Route>
+        <Route path="/profile" element={<Profile/>}></Route>
+       
 
     </Routes>
   )
