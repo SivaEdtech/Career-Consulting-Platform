@@ -9,5 +9,6 @@ export const env = {
   db_password : process.env.DB_PASSWORD,
   googleClientId : process.env.GOOGLE_CLIENT_ID,
   googleClientSecret : process.env.GOOGLE_CLIENT_SECRET,
-  jwt_secret : process.env.JWT_SECRET
+  jwt_secret : process.env.JWT_SECRET,
+  frontend_url : process.env.FRONTEND_URL
 };
