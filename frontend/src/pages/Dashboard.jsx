@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from "../api/axios"
 import { useAuth } from "../context/AuthContext";
 import {
     User,
@@ -197,7 +198,6 @@ export default function Dashboard() {
     ]);
     const [newSlotDate, setNewSlotDate] = useState('');
     const [newSlotTime, setNewSlotTime] = useState('10:00 AM');
-
     // Session Detail Modal State
     const [sessionDetailModal, setSessionDetailModal] = useState({ isOpen: false, session: null });
 
@@ -216,27 +216,6 @@ export default function Dashboard() {
         });
     }, [mentors, selectedDomain, searchQuery]);
 
-    // Function to call the backend API to create a slot with newSlotDate and newSlotTime
-    const createSlotAPI = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/slots`, {
-                time:newSlotTime,
-                date:newSlotDate
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to create slot');
-            }
-
-            const data = await response.json();
-            return data.slot;
-        } catch (err) {
-            console.error('Error creating slot:', err);
-            throw err;
-        }
-    };
     // Handle Confirm Booking
     const handleConfirmBooking = () => {
         if (!selectedSlot || !bookingModal.mentor) return;
@@ -387,7 +366,7 @@ export default function Dashboard() {
                                 </p>
                             </div>
                         </div>
-                  
+
                     </div>
                 </div>
             </header>
@@ -517,8 +496,8 @@ export default function Dashboard() {
                                                         type="button"
                                                         onClick={() => setSelectedSlot(slot)}
                                                         className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${isSelected
-                                                                ? 'border-black bg-gray-100 ring-2 ring-black/10'
-                                                                : 'border-gray-200 hover:border-black bg-white'
+                                                            ? 'border-black bg-gray-100 ring-2 ring-black/10'
+                                                            : 'border-gray-200 hover:border-black bg-white'
                                                             }`}
                                                     >
                                                         <div className="flex items-center space-x-1.5 text-xs font-bold text-black">
@@ -559,8 +538,8 @@ export default function Dashboard() {
                                             disabled={!selectedSlot}
                                             onClick={handleConfirmBooking}
                                             className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition ${selectedSlot
-                                                    ? 'bg-black hover:bg-gray-800 text-white shadow-md'
-                                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                                ? 'bg-black hover:bg-gray-800 text-white shadow-md'
+                                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                                 }`}
                                         >
                                             Confirm Booking (${bookingModal.mentor.rate})
@@ -745,8 +724,8 @@ function LearnerDashboardView({
                                 key={domain}
                                 onClick={() => setSelectedDomain(domain)}
                                 className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${selectedDomain === domain
-                                        ? 'bg-black text-white shadow-sm'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
+                                    ? 'bg-black text-white shadow-sm'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
                                     }`}
                             >
                                 {domain}
@@ -814,8 +793,35 @@ function MentorDashboardView({
     setNewSlotTime,
     reviews,
     onViewDetails,
-    createSlotAPI
 }) {
+    const [slotSubmitError, setSlotSubmitError] = useState(null)
+    const[slotSuccess,setSlotSuccess] = useState(null);
+
+    // Helper to add slot via API - returns a promise
+    const createSlotAPI = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/slots`,
+                {
+                    date: newSlotDate,
+                    time: newSlotTime
+                },
+                { withCredentials: true }
+            );
+            console.log(response.data);
+
+            setSlotSuccess(response.data.message);
+        } catch (error) {
+            // You can extend this error handling as needed for your app
+            const message =
+                error?.response?.data?.message ||
+                error?.response?.data?.errors?.[0]?.msg ||
+                "Something went wrong";
+
+            setSlotSubmitError(message);
+        }
+    }
     return (
         <div className="space-y-8">
             {/* Stats Overview */}
@@ -892,7 +898,10 @@ function MentorDashboardView({
                     </div>
 
                     {/* Add Slot Form */}
-                    <form onSubmit={createSlotAPI} className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <form
+                        onSubmit={createSlotAPI}
+                        className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200"
+                    >
                         <p className="text-xs font-bold uppercase tracking-wider text-gray-700">Add New Slot</p>
                         <div className="space-y-2">
                             <div>
@@ -912,25 +921,55 @@ function MentorDashboardView({
                                     onChange={(e) => setNewSlotTime(e.target.value)}
                                     className="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-black outline-none transition text-black cursor-pointer"
                                 >
-                                    <option value="09:00 AM">09:00 AM</option>
-                                    <option value="10:00 AM">10:00 AM</option>
-                                    <option value="11:00 AM">11:00 AM</option>
-                                    <option value="01:00 PM">01:00 PM</option>
-                                    <option value="02:00 PM">02:00 PM</option>
-                                    <option value="04:00 PM">04:00 PM</option>
-                                    <option value="06:00 PM">06:00 PM</option>
+                                    <option value="00:00:00">00:00</option>
+                                    <option value="01:00:00">01:00</option>
+                                    <option value="02:00:00">02:00</option>
+                                    <option value="03:00:00">03:00</option>
+                                    <option value="04:00:00">04:00</option>
+                                    <option value="05:00:00">05:00</option>
+                                    <option value="06:00:00">06:00</option>
+                                    <option value="07:00:00">07:00</option>
+                                    <option value="08:00:00">08:00</option>
+                                    <option value="09:00:00">09:00</option>
+                                    <option value="10:00:00">10:00</option>
+                                    <option value="11:00:00">11:00</option>
+                                    <option value="12:00:00">12:00</option>
+                                    <option value="13:00:00">13:00</option>
+                                    <option value="14:00:00">14:00</option>
+                                    <option value="16:00:00">16:00</option>
+                                    <option value="17:00:00">17:00</option>
+                                    <option value="18:00:00">18:00</option>
+                                    <option value="19:00:00">19:00</option>
+                                    <option value="20:00:00">20:00</option>
+                                    <option value="21:00:00">21:00</option>
+                                    <option value="22:00:00">22:00</option>
+                                    <option value="23:00:00">23:00</option>
                                 </select>
                             </div>
                         </div>
-                        <button 
-                            type="submit" 
+
+                        <div className="flex items-center space-x-2 mb-2">
+                            {slotSubmitError && (
+                                <span className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-lg px-3 py-2 w-full block animate-fade-out">
+                                    {slotSubmitError}
+                                </span>
+                            )}
+                            {slotSuccess && (
+                                <span className="text-xs text-green-600 bg-green-50 border border-green-200 rounded-lg px-3 py-2 w-full block animate-fade-out">
+                                    Slot successfully added!
+                                </span>
+                            )}
+                        </div>
+
+                        <button
+                            type="submit"
                             className="w-full py-2.5 bg-black hover:bg-gray-800 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition shadow-sm"
                         >
-                            <Plus className="w-4 h-4" />
-                            <span>Add Available Slot</span>
+                            <span>+ Add Available Slot</span>
                         </button>
                     </form>
-           
+              
+
 
                     {/* Slots List */}
                     <div className="space-y-2.5">
@@ -941,8 +980,8 @@ function MentorDashboardView({
                             </div>
                         ) : (
                             mentorSlots.map((slot) => (
-                                <div 
-                                    key={slot.id} 
+                                <div
+                                    key={slot.id}
                                     className="flex justify-between items-center p-3.5 border border-gray-200 rounded-xl text-xs bg-white hover:border-black transition shadow-xs"
                                 >
                                     <div className="space-y-0.5">
@@ -960,17 +999,16 @@ function MentorDashboardView({
                                         <button
                                             type="button"
                                             onClick={() => onToggleSlot(slot.id)}
-                                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition ${
-                                                slot.active 
-                                                    ? 'bg-gray-100 text-black border-gray-300 hover:bg-gray-200' 
-                                                    : 'bg-gray-50 text-gray-400 border-gray-200'
-                                            }`}
+                                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition ${slot.active
+                                                ? 'bg-gray-100 text-black border-gray-300 hover:bg-gray-200'
+                                                : 'bg-gray-50 text-gray-400 border-gray-200'
+                                                }`}
                                         >
                                             {slot.active ? 'Active' : 'Inactive'}
                                         </button>
-                                        <button 
+                                        <button
                                             type="button"
-                                            onClick={() => onDeleteSlot(slot.id)} 
+                                            onClick={() => onDeleteSlot(slot.id)}
                                             className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg transition"
                                             title="Delete Slot"
                                         >
