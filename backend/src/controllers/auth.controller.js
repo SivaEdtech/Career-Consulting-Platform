@@ -191,7 +191,7 @@ const googleCallback = async (req, res) => {
     }
 
     const googleUser = req.user;
-    console.log("Google user:", googleUser);
+    // console.log("Google user:", googleUser);
 
     const email = googleUser.emails?.[0]?.value;
     

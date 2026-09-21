@@ -253,14 +253,14 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-100 via-slate-50 to-gray-200 font-sans text-black antialiased selection:bg-black selection:text-white">
+    <div className="min-h-screen bg-gradient-to-b from-gray-100 via-slate-50 to-gray-200 font-sans text-black antialiased selection:bg-black selection:text-white transition-opacity duration-300 ease-in-out opacity-100">
       
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
           <div className="flex items-center space-x-8">
             <a href="#" className="flex items-center space-x-3 group">
-              <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center text-white font-bold text-xl shadow-md group-hover:scale-105 transition transform">
+              <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center text-white font-bold text-xl shadow-md group-hover:scale-105 transition duration-300 ease-in-out">
                 C
               </div>
               <div className="flex flex-col">
@@ -274,23 +274,23 @@ export default function LandingPage() {
             </a>
 
             <nav className="hidden md:flex items-center space-x-6 text-sm font-medium text-gray-700">
-              <a href="#mentors" className="hover:text-black transition">Find Mentors</a>
-              <a href="#services" className="hover:text-black transition">1:1 Video Sessions</a>
-              <a href="#tracks" className="hover:text-black transition">Career Tracks</a>
-              <a href="#app-download" className="hover:text-black transition">Mobile App</a>
+              <a href="#mentors" className="hover:text-black transition duration-200 ease-in-out">Find Mentors</a>
+              <a href="#services" className="hover:text-black transition duration-200 ease-in-out">1:1 Video Sessions</a>
+              <a href="#tracks" className="hover:text-black transition duration-200 ease-in-out">Career Tracks</a>
+              <a href="#app-download" className="hover:text-black transition duration-200 ease-in-out">Mobile App</a>
             </nav>
           </div>
 
           <div className="flex items-center space-x-3">
             <button
               onClick={() => openAuth('login')}
-              className="px-4 py-2 text-sm font-semibold text-black hover:text-gray-600 transition"
+              className="px-4 py-2 text-sm font-semibold text-black hover:text-gray-600 transition duration-200 ease-in-out hover:scale-[1.02] active:scale-[0.98]"
             >
               Log In
             </button>
             <button
               onClick={() => openAuth('signup')}
-              className="px-5 py-2.5 text-sm font-semibold text-white bg-black hover:bg-gray-800 rounded-xl shadow-sm transition transform hover:-translate-y-0.5"
+              className="px-5 py-2.5 text-sm font-semibold text-white bg-black hover:bg-gray-800 rounded-xl shadow-sm transition duration-200 ease-in-out hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98]"
             >
               Sign Up
             </button>
@@ -301,7 +301,7 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-gray-200 via-slate-100 to-gray-200 text-black pt-12 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-b border-gray-300">
         <div className="max-w-5xl mx-auto text-center space-y-6 relative z-10">
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-gray-300 text-black text-xs font-semibold tracking-wide uppercase shadow-sm">
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-gray-300 text-black text-xs font-semibold tracking-wide uppercase shadow-sm transition-transform duration-200 hover:scale-105">
             <Sparkles className="w-3.5 h-3.5 text-black" /> Verified Industry Mentors
           </span>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-black leading-tight">
@@ -312,7 +312,7 @@ export default function LandingPage() {
           </p>
 
           {/* Dual Search Bar */}
-          <div className="mt-8 bg-white p-2.5 sm:p-3 rounded-2xl shadow-xl border border-gray-300 max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-2 text-black">
+          <div className="mt-8 bg-white p-2.5 sm:p-3 rounded-2xl shadow-xl border border-gray-300 max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-2 text-black transition-all duration-300 hover:shadow-2xl">
             {/* Domain Dropdown Selector */}
             <div className="w-full md:w-2/5 flex items-center gap-2 px-3 py-2 bg-gray-50 md:bg-white rounded-xl border md:border-r md:border-y-0 md:border-l-0 border-gray-200">
               <MapPin className="w-5 h-5 text-black shrink-0" />
@@ -345,7 +345,7 @@ export default function LandingPage() {
             </div>
 
             {/* Search Button */}
-            <button className="w-full md:w-auto px-7 py-3.5 bg-black hover:bg-gray-800 text-white font-bold rounded-xl text-sm transition shadow-md flex items-center justify-center gap-2 shrink-0">
+            <button className="w-full md:w-auto px-7 py-3.5 bg-black hover:bg-gray-800 text-white font-bold rounded-xl text-sm transition duration-200 ease-in-out hover:scale-[1.02] active:scale-[0.98] shadow-md flex items-center justify-center gap-2 shrink-0">
               <span>Find Mentors</span>
               <ArrowRight className="w-4 h-4" />
             </button>
@@ -362,55 +362,55 @@ export default function LandingPage() {
       {/* Feature Cards Section */}
       <section id="services" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-200 hover:border-black transition flex flex-col justify-between group">
+          <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-200 hover:border-black transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between group">
             <div>
-              <div className="w-12 h-12 rounded-xl bg-gray-100 text-black flex items-center justify-center mb-4 group-hover:bg-black group-hover:text-white transition">
+              <div className="w-12 h-12 rounded-xl bg-gray-100 text-black flex items-center justify-center mb-4 group-hover:bg-black group-hover:text-white transition-colors duration-200">
                 <Video className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-black text-base mb-1">1:1 Video Mentorship</h3>
               <p className="text-xs text-gray-600 leading-relaxed">Connect 1-on-1 with industry experts in 30-minute private video calls.</p>
             </div>
-            <a href="#mentors" className="mt-4 text-xs font-bold text-black flex items-center gap-1 hover:underline">
-              Book Session <ChevronRight className="w-3.5 h-3.5" />
+            <a href="#mentors" className="mt-4 text-xs font-bold text-black flex items-center gap-1 hover:underline transition-all duration-200">
+              Book Session <ChevronRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
             </a>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-200 hover:border-black transition flex flex-col justify-between group">
+          <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-200 hover:border-black transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between group">
             <div>
-              <div className="w-12 h-12 rounded-xl bg-gray-100 text-black flex items-center justify-center mb-4 group-hover:bg-black group-hover:text-white transition">
+              <div className="w-12 h-12 rounded-xl bg-gray-100 text-black flex items-center justify-center mb-4 group-hover:bg-black group-hover:text-white transition-colors duration-200">
                 <Search className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-black text-base mb-1">Search Mentors by Role</h3>
               <p className="text-xs text-gray-600 leading-relaxed">Find verified engineers, product managers & design leads by experience.</p>
             </div>
-            <a href="#mentors" className="mt-4 text-xs font-bold text-black flex items-center gap-1 hover:underline">
-              Explore Directory <ChevronRight className="w-3.5 h-3.5" />
+            <a href="#mentors" className="mt-4 text-xs font-bold text-black flex items-center gap-1 hover:underline transition-all duration-200">
+              Explore Directory <ChevronRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
             </a>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-200 hover:border-black transition flex flex-col justify-between group">
+          <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-200 hover:border-black transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between group">
             <div>
-              <div className="w-12 h-12 rounded-xl bg-gray-100 text-black flex items-center justify-center mb-4 group-hover:bg-black group-hover:text-white transition">
+              <div className="w-12 h-12 rounded-xl bg-gray-100 text-black flex items-center justify-center mb-4 group-hover:bg-black group-hover:text-white transition-colors duration-200">
                 <FileText className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-black text-base mb-1">Resume & Portfolio Review</h3>
               <p className="text-xs text-gray-600 leading-relaxed">Get actionable feedback to optimize your resume for ATS and recruiter screening.</p>
             </div>
-            <a href="#mentors" className="mt-4 text-xs font-bold text-black flex items-center gap-1 hover:underline">
-              Get Feedback <ChevronRight className="w-3.5 h-3.5" />
+            <a href="#mentors" className="mt-4 text-xs font-bold text-black flex items-center gap-1 hover:underline transition-all duration-200">
+              Get Feedback <ChevronRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
             </a>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-200 hover:border-black transition flex flex-col justify-between group">
+          <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-200 hover:border-black transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between group">
             <div>
-              <div className="w-12 h-12 rounded-xl bg-gray-100 text-black flex items-center justify-center mb-4 group-hover:bg-black group-hover:text-white transition">
+              <div className="w-12 h-12 rounded-xl bg-gray-100 text-black flex items-center justify-center mb-4 group-hover:bg-black group-hover:text-white transition-colors duration-200">
                 <UserCheck className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-black text-base mb-1">Mock Interviews & Feedback</h3>
               <p className="text-xs text-gray-600 leading-relaxed">Practice real technical & behavioral rounds with detailed performance notes.</p>
             </div>
-            <a href="#mentors" className="mt-4 text-xs font-bold text-black flex items-center gap-1 hover:underline">
-              Practice Now <ChevronRight className="w-3.5 h-3.5" />
+            <a href="#mentors" className="mt-4 text-xs font-bold text-black flex items-center gap-1 hover:underline transition-all duration-200">
+              Practice Now <ChevronRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
             </a>
           </div>
         </div>
@@ -430,13 +430,13 @@ export default function LandingPage() {
               <button
                 key={cat.id}
                 onClick={() => setSelectedDomain('All Fields')}
-                className="px-4 py-2.5 bg-white border border-gray-300 rounded-full shadow-sm hover:border-black hover:shadow-md transition flex items-center gap-2 group cursor-pointer"
+                className="px-4 py-2.5 bg-white border border-gray-300 rounded-full shadow-sm hover:border-black hover:shadow-md transition-all duration-200 ease-in-out hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2 group cursor-pointer"
               >
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center ${cat.color}`}>
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center ${cat.color} transition-transform duration-200 group-hover:scale-110`}>
                   <IconComponent className="w-4 h-4" />
                 </div>
-                <span className="text-xs font-bold text-black group-hover:text-black transition">{cat.label}</span>
-                <ChevronRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-black transition" />
+                <span className="text-xs font-bold text-black group-hover:text-black transition-colors duration-200">{cat.label}</span>
+                <ChevronRight className="w-3.5 h-3.5 text-gray-400 group-hover:text-black transition-all duration-200 group-hover:translate-x-0.5" />
               </button>
             );
           })}
@@ -459,7 +459,7 @@ export default function LandingPage() {
           </div>
           <button
             onClick={() => setSelectedDomain('All Fields')}
-            className="mt-4 md:mt-0 text-xs font-bold text-black hover:text-gray-700 flex items-center gap-1 border-b border-black pb-0.5"
+            className="mt-4 md:mt-0 text-xs font-bold text-black hover:text-gray-700 flex items-center gap-1 border-b border-black pb-0.5 transition-colors duration-200"
           >
             View All Specialized Fields <ArrowUpRight className="w-3.5 h-3.5" />
           </button>
@@ -472,13 +472,13 @@ export default function LandingPage() {
               <div
                 key={track.id}
                 onClick={() => setSelectedDomain(track.name)}
-                className={`bg-white rounded-2xl p-6 border border-gray-300 ${track.borderColor} shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between cursor-pointer group relative overflow-hidden`}
+                className={`bg-white rounded-2xl p-6 border border-gray-300 ${track.borderColor} shadow-sm hover:shadow-lg transition-all duration-300 ease-in-out hover:-translate-y-1 flex flex-col justify-between cursor-pointer group relative overflow-hidden`}
               >
                 <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${track.gradient} rounded-full -mr-10 -mt-10 pointer-events-none`}></div>
 
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <div className={`w-12 h-12 rounded-xl ${track.iconColor} flex items-center justify-center font-bold shadow-sm`}>
+                    <div className={`w-12 h-12 rounded-xl ${track.iconColor} flex items-center justify-center font-bold shadow-sm transition-transform duration-300 group-hover:scale-110`}>
                       <TrackIcon className="w-6 h-6" />
                     </div>
                     <span className="px-2.5 py-1 rounded-full bg-gray-100 text-black text-[11px] font-semibold border border-gray-200">
@@ -486,7 +486,7 @@ export default function LandingPage() {
                     </span>
                   </div>
 
-                  <h3 className="text-lg font-bold text-black group-hover:text-gray-700 transition">
+                  <h3 className="text-lg font-bold text-black group-hover:text-gray-700 transition-colors duration-200">
                     {track.name}
                   </h3>
                   <p className="text-xs text-gray-600 mt-1.5 leading-relaxed">
@@ -507,8 +507,8 @@ export default function LandingPage() {
 
                 <div className="mt-6 pt-3 flex items-center justify-between text-xs font-bold text-black group-hover:text-gray-700">
                   <span>Explore Mentors</span>
-                  <div className="w-7 h-7 rounded-full bg-gray-100 group-hover:bg-black group-hover:text-white transition flex items-center justify-center">
-                    <ArrowRight className="w-3.5 h-3.5" />
+                  <div className="w-7 h-7 rounded-full bg-gray-100 group-hover:bg-black group-hover:text-white transition-all duration-200 ease-in-out flex items-center justify-center">
+                    <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </div>
                 </div>
               </div>
@@ -535,13 +535,13 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {FEATURED_MENTORS.map((mentor) => (
-              <div key={mentor.id} className="bg-white rounded-2xl overflow-hidden border border-gray-300 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+              <div key={mentor.id} className="bg-white rounded-2xl overflow-hidden border border-gray-300 shadow-sm hover:shadow-lg transition-all duration-300 ease-in-out hover:-translate-y-1 flex flex-col justify-between">
                 <div>
                   <div className="p-5 flex items-start gap-4 border-b border-gray-100">
                     <img
                       src={mentor.image}
                       alt={mentor.name}
-                      className="w-16 h-16 rounded-2xl object-cover ring-2 ring-gray-300"
+                      className="w-16 h-16 rounded-2xl object-cover ring-2 ring-gray-300 transition-transform duration-300 hover:scale-105"
                     />
                     <div>
                       <div className="flex items-center gap-1">
@@ -583,7 +583,7 @@ export default function LandingPage() {
                   </div>
                   <button
                     onClick={() => openAuth('signup')}
-                    className="px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-xl text-xs font-bold shadow-sm transition"
+                    className="px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-xl text-xs font-bold shadow-sm transition duration-200 ease-in-out hover:scale-[1.02] active:scale-[0.98]"
                   >
                     Book 1:1 Call
                   </button>
@@ -621,17 +621,17 @@ export default function LandingPage() {
                     placeholder="Enter 10-digit mobile number"
                     value={smsPhone}
                     onChange={(e) => setSmsPhone(e.target.value)}
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-xs text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black"
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-xs text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black transition-all duration-200"
                   />
                   <button
                     type="submit"
-                    className="px-5 py-2.5 bg-black hover:bg-gray-800 text-white font-bold rounded-xl text-xs transition shadow-md shrink-0"
+                    className="px-5 py-2.5 bg-black hover:bg-gray-800 text-white font-bold rounded-xl text-xs transition duration-200 ease-in-out hover:scale-[1.02] active:scale-[0.98] shadow-md shrink-0"
                   >
                     Send Link
                   </button>
                 </div>
                 {smsSent && (
-                  <p className="text-xs text-black font-semibold mt-2 flex items-center gap-1">
+                  <p className="text-xs text-black font-semibold mt-2 flex items-center gap-1 transition-all duration-300 animate-in fade-in">
                     <Check className="w-4 h-4" /> App download link sent successfully!
                   </p>
                 )}
@@ -639,14 +639,14 @@ export default function LandingPage() {
 
               {/* Store Badges */}
               <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-gray-300">
-                <button className="px-5 py-2.5 bg-white hover:bg-gray-50 rounded-xl text-xs font-bold border border-gray-300 flex items-center gap-3 transition text-black">
+                <button className="px-5 py-2.5 bg-white hover:bg-gray-50 rounded-xl text-xs font-bold border border-gray-300 flex items-center gap-3 transition duration-200 ease-in-out hover:scale-[1.02] active:scale-[0.98] text-black">
                   <Smartphone className="w-5 h-5 text-black" />
                   <div className="text-left">
                     <span className="text-[10px] text-gray-500 block">Download on</span>
                     <span>App Store</span>
                   </div>
                 </button>
-                <button className="px-5 py-2.5 bg-white hover:bg-gray-50 rounded-xl text-xs font-bold border border-gray-300 flex items-center gap-3 transition text-black">
+                <button className="px-5 py-2.5 bg-white hover:bg-gray-50 rounded-xl text-xs font-bold border border-gray-300 flex items-center gap-3 transition duration-200 ease-in-out hover:scale-[1.02] active:scale-[0.98] text-black">
                   <Smartphone className="w-5 h-5 text-black" />
                   <div className="text-left">
                     <span className="text-[10px] text-gray-500 block">Get it on</span>
@@ -658,7 +658,7 @@ export default function LandingPage() {
 
             {/* Right Column: Custom Phone Mockup SVG Frame */}
             <div className="lg:col-span-5 flex justify-center items-center relative">
-              <div className="relative w-64 h-auto sm:w-72 bg-gray-900 rounded-[40px] p-3 shadow-2xl border-4 border-gray-800 ring-1 ring-gray-300">
+              <div className="relative w-64 h-auto sm:w-72 bg-gray-900 rounded-[40px] p-3 shadow-2xl border-4 border-gray-800 ring-1 ring-gray-300 transition-transform duration-500 hover:scale-[1.02]">
                 <div className="w-20 h-4 bg-gray-800 rounded-b-xl mx-auto absolute top-3 left-1/2 -translate-x-1/2 z-20"></div>
 
                 <div className="bg-white rounded-[30px] overflow-hidden text-black pt-8 pb-4 px-4 space-y-3">
@@ -719,28 +719,28 @@ export default function LandingPage() {
           <div>
             <h4 className="font-semibold text-white mb-3">For Learners</h4>
             <ul className="space-y-2">
-              <li><a href="#mentors" className="hover:text-white transition">Find Industry Mentors</a></li>
-              <li><a href="#services" className="hover:text-white transition">Book Mock Interviews</a></li>
-              <li><a href="#services" className="hover:text-white transition">Resume & Portfolio Audit</a></li>
-              <li><a href="#tracks" className="hover:text-white transition">Explore Career Tracks</a></li>
+              <li><a href="#mentors" className="hover:text-white transition duration-200">Find Industry Mentors</a></li>
+              <li><a href="#services" className="hover:text-white transition duration-200">Book Mock Interviews</a></li>
+              <li><a href="#services" className="hover:text-white transition duration-200">Resume & Portfolio Audit</a></li>
+              <li><a href="#tracks" className="hover:text-white transition duration-200">Explore Career Tracks</a></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-semibold text-white mb-3">For Professionals</h4>
             <ul className="space-y-2">
-              <li><a href="#" onClick={() => openAuth('signup')} className="hover:text-white transition">Become a Mentor</a></li>
-              <li><a href="#" className="hover:text-white transition">Mentor Guidelines</a></li>
-              <li><a href="#" className="hover:text-white transition">Community & Earnings</a></li>
+              <li><a href="#" onClick={() => openAuth('signup')} className="hover:text-white transition duration-200">Become a Mentor</a></li>
+              <li><a href="#" className="hover:text-white transition duration-200">Mentor Guidelines</a></li>
+              <li><a href="#" className="hover:text-white transition duration-200">Community & Earnings</a></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-semibold text-white mb-3">Support</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:text-white transition">Help Center</a></li>
-              <li><a href="#" className="hover:text-white transition">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-white transition">Terms of Service</a></li>
+              <li><a href="#" className="hover:text-white transition duration-200">Help Center</a></li>
+              <li><a href="#" className="hover:text-white transition duration-200">Privacy Policy</a></li>
+              <li><a href="#" className="hover:text-white transition duration-200">Terms of Service</a></li>
             </ul>
           </div>
         </div>
@@ -752,11 +752,11 @@ export default function LandingPage() {
 
       {/* Authentication Modal */}
       {authModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative border border-gray-200 animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ease-in-out animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative border border-gray-200 transition-all duration-300 ease-out animate-in zoom-in-95">
             <button
               onClick={() => setAuthModalOpen(false)}
-              className="absolute top-5 right-5 text-gray-400 hover:text-black p-1 rounded-full hover:bg-gray-100 transition"
+              className="absolute top-5 right-5 text-gray-400 hover:text-black p-1 rounded-full hover:bg-gray-100 transition duration-200 ease-in-out"
             >
               <X className="w-5 h-5" />
             </button>
@@ -778,14 +778,14 @@ export default function LandingPage() {
                 <button
                   type="button"
                   onClick={() => setUserRole('learner')}
-                  className={`py-2 text-xs font-bold rounded-lg transition ${userRole === 'learner' ? 'bg-black text-white shadow-sm' : 'text-gray-600 hover:text-black'}`}
+                  className={`py-2 text-xs font-bold rounded-lg transition duration-200 ease-in-out ${userRole === 'learner' ? 'bg-black text-white shadow-sm' : 'text-gray-600 hover:text-black'}`}
                 >
                   I am a Learner
                 </button>
                 <button
                   type="button"
                   onClick={() => setUserRole('mentor')}
-                  className={`py-2 text-xs font-bold rounded-lg transition ${userRole === 'mentor' ? 'bg-black text-white shadow-sm' : 'text-gray-600 hover:text-black'}`}
+                  className={`py-2 text-xs font-bold rounded-lg transition duration-200 ease-in-out ${userRole === 'mentor' ? 'bg-black text-white shadow-sm' : 'text-gray-600 hover:text-black'}`}
                 >
                   I am a Mentor
                 </button>
@@ -795,7 +795,7 @@ export default function LandingPage() {
             <button
               type="button"
               onClick={handleGoogleAuth}
-              className="w-full py-2.5 px-4 bg-white border border-gray-300 hover:bg-gray-50 text-black font-semibold rounded-xl text-xs flex items-center justify-center gap-3 shadow-sm transition mb-4"
+              className="w-full py-2.5 px-4 bg-white border border-gray-300 hover:bg-gray-50 text-black font-semibold rounded-xl text-xs flex items-center justify-center gap-3 shadow-sm transition duration-200 ease-in-out hover:scale-[1.02] active:scale-[0.98] mb-4"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -824,7 +824,7 @@ export default function LandingPage() {
                       placeholder="John Doe"
                       value={authName}
                       onChange={(e) => setAuthName(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-black focus:bg-white text-black"
+                      className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-black focus:bg-white text-black transition-all duration-200"
                     />
                   </div>
                 </div>
@@ -840,7 +840,7 @@ export default function LandingPage() {
                     placeholder="you@example.com"
                     value={authEmail}
                     onChange={(e) => setAuthEmail(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-black focus:bg-white text-black"
+                    className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-black focus:bg-white text-black transition-all duration-200"
                   />
                 </div>
               </div>
@@ -855,13 +855,13 @@ export default function LandingPage() {
                     placeholder="••••••••"
                     value={authPassword}
                     onChange={(e) => setAuthPassword(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-black focus:bg-white text-black"
+                    className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-black focus:bg-white text-black transition-all duration-200"
                   />
                 </div>
               </div>
 
               {submitError && (
-                <div className="w-full bg-red-50 border border-red-300 text-red-700 text-xs rounded-xl px-3 py-2 mb-2 flex items-center">
+                <div className="w-full bg-red-50 border border-red-300 text-red-700 text-xs rounded-xl px-3 py-2 mb-2 flex items-center transition-all duration-300 animate-in fade-in">
                   <svg className="h-4 w-4 mr-2 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" />
@@ -872,7 +872,7 @@ export default function LandingPage() {
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-black hover:bg-gray-800 text-white font-bold rounded-xl text-xs shadow-md transition mt-2 flex items-center justify-center"
+                className="w-full py-2.5 bg-black hover:bg-gray-800 text-white font-bold rounded-xl text-xs shadow-md transition duration-200 ease-in-out hover:scale-[1.02] active:scale-[0.98] mt-2 flex items-center justify-center"
                 disabled={submitting}
               >
                 {submitting ? (
@@ -900,7 +900,7 @@ export default function LandingPage() {
                       setAuthMode('signup');
                       if (submitError) setSubmitError('');
                     }}
-                    className="text-black font-bold hover:underline"
+                    className="text-black font-bold hover:underline transition-colors duration-200"
                   >
                     Sign Up
                   </button>
@@ -913,7 +913,7 @@ export default function LandingPage() {
                       setAuthMode('login');
                       if (submitError) setSubmitError('');
                     }}
-                    className="text-black font-bold hover:underline"
+                    className="text-black font-bold hover:underline transition-colors duration-200"
                   >
                     Log In
                   </button>
