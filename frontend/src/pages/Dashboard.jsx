@@ -433,7 +433,7 @@ export default function Dashboard() {
                         <div className="p-6 space-y-5">
                             {bookingSuccess ? (
                                 <div className="py-8 text-center space-y-3">
-                                    <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto border border-blue-200 shadow-xs">
+                                    <div className="w-16 h-16 bg-black text-blue-600 rounded-full flex items-center justify-center mx-auto border border-blue-200 shadow-xs">
                                         <Check className="w-8 h-8" />
                                     </div>
                                     <h4 className="text-xl font-extrabold text-black">Session Confirmed!</h4>
@@ -1068,7 +1068,7 @@ function MentorDashboardView({
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                        <div className="p-3 bg-blue-50 text-blue-600 rounded-xl border border-blue-100">
+                        <div className="p-3 bg-black text-blue-600 rounded-xl border border-blue-100">
                             <Calendar className="w-6 h-6" />
                         </div>
                         <div>
@@ -1076,7 +1076,7 @@ function MentorDashboardView({
                             <h3 className="text-2xl font-extrabold text-black">{mentorBookings.length}</h3>
                         </div>
                     </div>
-                    <span className="text-[10px] font-bold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold bg-black text-blue-700 px-2 py-0.5 rounded-full">
                         Active
                     </span>
                 </div>
@@ -1194,7 +1194,7 @@ function MentorDashboardView({
                                 <p className="text-[11px] text-gray-500 font-medium">Configure public mentorship slots</p>
                             </div>
                         </div>
-                        <span className="text-xs font-bold bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full border border-blue-100">
+                        <span className="text-xs font-bold bg-black text-blue-700 px-2.5 py-1 rounded-full border border-blue-100">
                             {mentorSlots.length} Slots
                         </span>
                     </div>
