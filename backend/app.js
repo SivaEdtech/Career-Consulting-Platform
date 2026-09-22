@@ -1,6 +1,7 @@
 import express from "express";
 import authRoutes from "./src/routes/auth.routes.js";
 import proffesionalRoutes from "./src/routes/proffesional.route.js"
+import slotRoutes from "./src/routes/slot.route.js"
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import {env} from "./src/config/env.js"
@@ -19,6 +20,7 @@ app.use(cookieParser())
 
 app.use("/api",authRoutes)
 app.use("/api", proffesionalRoutes)
+app.use("/api",slotRoutes)
 
 
 export default app;
