@@ -3,13 +3,14 @@ import pool from "../config/mysql.js";
 const getProfessional = async (req, res) => {
     try {
         const account_id = req.user?.account_id;
+        console.log(account_id)
 
         if (!account_id) {
             return res.status(401).json({ message: "Unauthorized: No user found" });
         }
 
         const [rows] = await pool.query(
-            `SELECT * FROM professional WHERE account_id = ?`,
+            `SELECT * FROM professionals WHERE account_id = ?`,
             [account_id]
         );
 
@@ -19,7 +20,7 @@ const getProfessional = async (req, res) => {
 
         return res.status(200).json({
             message: "Professional user fetched successfully",
-            professional: user
+            professional: rows[0]
         });
     } catch (err) {
         return res.status(500).json({

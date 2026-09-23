@@ -146,7 +146,32 @@ const deleteSlot = async (req, res) => {
     }
 };
 
+const getSlotsByProfessional = async (req, res) => {
+    try {
+        const { professionalId } = req.params;
+
+        if (!professionalId) {
+            return res.status(400).json({ message: "Professional ID is required" });
+        }
+
+        // Query the slots table for slots belonging to professionalId and status = 'available'
+        const [rows] = await pool.query(
+            `SELECT * FROM slots WHERE professional_id = ? AND status = 'Available'`,
+            [professionalId]
+        );
+
+        return res.status(200).json({
+            slots: rows,
+        });
+    } catch (err) {
+        return res.status(500).json({
+            message: "Error while fetching slots for professional",
+            error: err.message,
+        });
+    }
+};
 
 
 
-export {createSlot , getSlots, deleteSlot}
+
+export {createSlot , getSlots, deleteSlot, getSlotsByProfessional}

@@ -297,7 +297,7 @@ const getUser = async (req, res) => {
 
     // Fetch the user data from the accounts table
     const [rows] = await pool.query(
-      "SELECT * FROM accounts WHERE account_id = ?",
+      "SELECT account_id , email, role FROM accounts WHERE account_id = ?",
       [account_id]
     );
 

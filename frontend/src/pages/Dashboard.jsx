@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from "../api/axios";
@@ -176,11 +177,14 @@ const INITIAL_REVIEWS = [
 
 export default function Dashboard() {
     const { user, loading } = useAuth();
+
     const navigate = useNavigate();
 
+
+    // Safely define id after loading/user null checks (or use optional chaining)
     const normalizedRole = user?.role ? user.role.toUpperCase() : undefined;
     const isLearner = normalizedRole === 'LEARNER';
-    const isMentorOrProfessional = normalizedRole === 'MENTOR' || normalizedRole === 'PROFESSIONAL';
+    const isMentorOrProfessional = normalizedRole === 'PROFESSIONAL';
 
     // Dynamic state management
     const [mentors] = useState(INITIAL_MENTORS);
@@ -246,21 +250,10 @@ export default function Dashboard() {
         }, 1500);
     };
 
-    // Slot Handlers
-    // const handleAddSlot = (e) => {
-    //     e.preventDefault();
-    //     if (!newSlotDate) return;
-    //     setMentorSlots([...mentorSlots, { id: `ms-${Date.now()}`, date: newSlotDate, time: newSlotTime, active: true }]);
-    //     setNewSlotDate('');
-    // };
 
     const toggleSlotStatus = (id) => {
         setMentorSlots(mentorSlots.map(s => s.id === id ? { ...s, active: !s.active } : s));
     };
-
-    // const deleteSlot = (id) => {
-    //     setMentorSlots(mentorSlots.filter(s => s.id !== id));
-    // };
 
     if (loading) {
         return (
@@ -294,6 +287,9 @@ export default function Dashboard() {
             </div>
         );
     }
+
+    
+    const currUserAccountId = user?.account_id;
 
     return (
         <div className="min-h-screen bg-slate-50 text-black font-sans antialiased flex flex-col selection:bg-blue-600 selection:text-white">
@@ -338,7 +334,7 @@ export default function Dashboard() {
 
                         <div className="flex items-center space-x-3 pl-2 border-l border-gray-200">
                             <button
-                                onClick={() => navigate('/profile')}
+                                onClick={() => navigate(`/user/${currUserAccountId}/profile`)}
                                 className="focus:outline-none group relative"
                                 style={{ padding: 0, border: 'none', background: 'none', cursor: 'pointer' }}
                                 aria-label="Go to profile"
