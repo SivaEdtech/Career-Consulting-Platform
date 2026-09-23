@@ -3,7 +3,7 @@ import pool from "../config/mysql.js";
 
 const getLearner = async(req, res) => {
     try {
-      // Assume JWT-based authentication middleware attaches user info to req.user
+     
       const user = req.user;
       if (!user) {
         return res.status(401).json({ message: "Unauthorized: No user found" });
@@ -12,15 +12,15 @@ const getLearner = async(req, res) => {
     
       const { account_id } = user;
 
-      // INSERT_YOUR_CODE
       // Fetch learner-specific details from learner table using the account_id as foreign key
       const [learnerRows] = await pool.query(
         "SELECT * FROM learner WHERE account_id = ?",
         [account_id]
       );
       const learner = learnerRows[0];
+      console.log(learner)
 
-      if (!learner) {
+      if (learner.length == 0) {
         return res.status(404).json({ message: "Learner profile not found" });
       }
 

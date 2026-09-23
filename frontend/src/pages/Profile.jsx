@@ -28,9 +28,9 @@ export default function Profile() {
     try {
       setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/learner/me`, { withCredentials: true });
-      setProfile(res.data);
-
       console.log("learner data:" , res)
+      setProfile(res.data.learner);
+
     } catch (err) {
       console.error('Error fetching learner profile:', err);
     } finally {
@@ -76,55 +76,30 @@ export default function Profile() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6 font-sans text-black">
-      {/* Header Info Card */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row items-center gap-6">
-        <img
-          src={profile?.profile_photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300'}
-          alt={profile?.name || user?.name}
-          className="w-24 h-24 rounded-full object-cover border-2 border-gray-100"
-        />
-        <div className="space-y-2 text-center sm:text-left flex-1">
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-            <h1 className="text-2xl font-bold">{profile?.name || user?.name}</h1>
-            <span className="px-3 py-1 rounded-full text-xs font-semibold uppercase bg-black text-white">
-              {user?.role}
-            </span>
-          </div>
-          <p className="text-sm text-gray-500">{profile?.email || user?.email}</p>
-          <p className="text-sm text-gray-700">{profile?.bio || 'No biography available.'}</p>
-        </div>
-      </div>
 
-      {/* Role-Specific Content */}
       {isProfessional ? (
         <>
+          {/* Professional Profile Header */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row items-center gap-6">
+            <img
+              src={profile?.profile_photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300'}
+              alt={profile?.name || 'Profile Photo'}
+              className="w-24 h-24 rounded-full object-cover border-2 border-gray-100"
+            />
+            <div className="space-y-2 text-center sm:text-left flex-1">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                <h1 className="text-2xl font-bold">{profile?.name || 'No name provided'}</h1>
+                <span className="px-3 py-1 rounded-full text-xs font-semibold uppercase bg-black text-white">
+                  {user?.role}
+                </span>
+              </div>
+              <p className="text-sm text-gray-500">{profile?.email || 'No email provided'}</p>
+              <p className="text-sm text-gray-700">{profile?.bio || 'No biography available.'}</p>
+            </div>
+          </div>
+
           {/* Professional Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Name */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex flex-col gap-2">
-              <div className="flex items-center space-x-2 text-gray-700 font-semibold text-sm">
-                <User className="w-4 h-4" />
-                <span>Name</span>
-              </div>
-              <p className="text-lg font-bold">
-                {profile?.name || 'No name available'}
-              </p>
-            </div>
-
-            {/* Profile photo (repeat for direct display if needed elsewhere) */}
-            {/* No extra block needed if already displayed above */}
-
-            {/* Bio */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex flex-col gap-2">
-              <div className="flex items-center space-x-2 text-gray-700 font-semibold text-sm">
-                <BookOpen className="w-4 h-4" />
-                <span>Bio</span>
-              </div>
-              <p className="text-sm text-gray-800">
-                {profile?.bio || 'No biography available.'}
-              </p>
-            </div>
-
             {/* Consulting Fee */}
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex flex-col gap-2">
               <div className="flex items-center space-x-2 text-gray-700 font-semibold text-sm">
@@ -179,14 +154,7 @@ export default function Profile() {
               </div>
             </div>
 
-          {/* Slots Available Section (Professionals Only) */}
-          {/* <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-4">
-            <div className="flex items-center space-x-2 border-b border-gray-100 pb-3">
-              <Calendar className="w-5 h-5 text-black" />
-              <h2 className="text-base font-bold">Available Slots</h2>
-            </div>
-
-             Number of Consultations */}
+            {/* Number of Consultations */}
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex flex-col gap-2">
               <div className="flex items-center space-x-2 text-gray-700 font-semibold text-sm">
                 <Calendar className="w-4 h-4" />
@@ -196,6 +164,16 @@ export default function Profile() {
                 {profile?.number_of_consultations ?? 0}
               </p>
             </div>
+
+            {/* Bio (again if desired; already in header) */}
+            {/* Can remove this block, bio already shown above - keeping for visibility, but it can easily be omitted */}
+            {/* <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex flex-col gap-2">
+              <div className="flex items-center space-x-2 text-gray-700 font-semibold text-sm">
+                <BookOpen className="w-4 h-4" />
+                <span>Bio</span>
+              </div>
+              <p className="text-sm text-gray-800">{profile?.bio || 'No biography available.'}</p>
+            </div> */}
           </div>
 
           {/* Available Slots Section */}
@@ -210,7 +188,6 @@ export default function Profile() {
                   // Format date to something like "31 Aug 2026"
                   let formattedDate = '';
                   try {
-                    // Try to parse as ISO string and localize
                     const dateObj = new Date(slot.date);
                     if (!isNaN(dateObj.getTime())) {
                       formattedDate = dateObj.toLocaleDateString(undefined, {
@@ -219,7 +196,7 @@ export default function Profile() {
                         day: 'numeric',
                       });
                     } else {
-                      formattedDate = slot.date; // fallback to raw
+                      formattedDate = slot.date;
                     }
                   } catch {
                     formattedDate = slot.date;
@@ -228,10 +205,7 @@ export default function Profile() {
                   // Format time - support both HH:mm:ss and possible ISO formats
                   let formattedTime = '';
                   if (slot.start_time) {
-                    // If it's already in HH:mm or HH:mm:ss, format simply, else try to parse
-                    // Edge case: it could be '18:30:00' or a full ISO string or Date
                     if (/^\d{2}:\d{2}(:\d{2})?$/.test(slot.start_time)) {
-                      // Optionally trim seconds
                       formattedTime = slot.start_time.slice(0, 5);
                     } else {
                       try {
@@ -273,7 +247,6 @@ export default function Profile() {
                       <button
                         className="mt-2 md:mt-0 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 font-semibold transition text-sm"
                         onClick={() => {
-                          // Replace this alert with your actual booking logic
                           alert(`Book Slot ID: ${slot.slot_id}`);
                         }}
                       >
@@ -287,36 +260,75 @@ export default function Profile() {
               )}
             </div>
           </div>
-  
-  
         </>
       ) : (
-        /* Learner Details */
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-2">
-            <div className="flex items-center space-x-2 text-gray-700 font-semibold text-sm">
-              <GraduationCap className="w-4 h-4" />
-              <span>Education</span>
+        /* Learner Profile - Completely independent structure */
+        <div className="max-w-xl mx-auto flex flex-col gap-7">
+          {/* Profile Overview */}
+          <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-3xl p-8 shadow-md flex flex-col items-center relative">
+            <div className="mb-3">
+              <img
+                src={profile?.profile_photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300'}
+                alt={profile?.name || 'Profile Photo'}
+                className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-lg bg-gray-100"
+              />
             </div>
-            <p className="text-sm font-medium text-gray-800">
-              {profile?.education_background || 'No education info added.'}
-            </p>
+            <div className="text-2xl font-bold text-gray-900 text-center tracking-tight">
+              {profile?.name || <span className="text-gray-400">No name provided</span>}
+            </div>
+            <span className="mt-2 px-4 py-1 rounded-full text-xs font-semibold uppercase bg-gradient-to-r from-black to-gray-800 text-white tracking-wide shadow">
+              {user?.role || "LEARNER"}
+            </span>
+            <div className="text-sm text-gray-500 italic text-center mt-1">
+              {profile?.email || 'No email provided'}
+            </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-2">
-            <div className="flex items-center space-x-2 text-gray-700 font-semibold text-sm">
-              <Sparkles className="w-4 h-4" />
+          {/* Education */}
+          <div className="bg-white border border-gray-100 rounded-3xl p-7 shadow flex flex-col gap-2">
+            <div className="flex items-center space-x-2 text-blue-700 font-semibold text-base mb-1">
+              <GraduationCap className="w-5 h-5" />
+              <span>Education</span>
+            </div>
+            <div className="text-sm text-gray-700 font-medium bg-blue-50 rounded-lg px-3 py-2">
+              {profile?.education_background || <span className="text-gray-400">No education info added.</span>}
+            </div>
+          </div>
+
+          {/* Bio */}
+          <div className="bg-white border border-gray-100 rounded-3xl p-7 shadow flex flex-col gap-2">
+            <div className="flex items-center space-x-2 text-violet-700 font-semibold text-base mb-1">
+              <BookOpen className="w-5 h-5" />
+              <span>Bio</span>
+            </div>
+            <div className="text-sm text-gray-700 bg-violet-50 rounded-lg px-3 py-2">
+              {profile?.bio || <span className="text-gray-400">No bio provided.</span>}
+            </div>
+          </div>
+
+          {/* Interests */}
+          <div className="bg-gradient-to-b from-white to-gray-100 border border-gray-100 rounded-3xl p-7 shadow flex flex-col gap-2">
+            <div className="flex items-center space-x-2 text-pink-600 font-semibold text-base mb-1">
+              <Sparkles className="w-5 h-5" />
               <span>Interests</span>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {profile?.interests?.map((interest, idx) => (
-                <span key={idx} className="bg-gray-100 text-xs font-medium px-2.5 py-1 rounded-md">
-                  {interest}
-                </span>
-              )) || <p className="text-xs text-gray-500">No interests added</p>}
+            <div className="flex flex-wrap gap-2 mt-1">
+              {Array.isArray(profile?.interests) && profile.interests.length > 0 ? (
+                profile.interests.map((interest, idx) => (
+                  <span
+                    key={idx}
+                    className="bg-pink-50 text-pink-700 text-xs font-medium px-3 py-1 rounded-full border border-pink-200 shadow-sm"
+                  >
+                    {interest}
+                  </span>
+                ))
+              ) : (
+                <span className="text-xs text-gray-400 italic">No interests added</span>
+              )}
             </div>
           </div>
         </div>
+  
       )}
     </div>
   );
