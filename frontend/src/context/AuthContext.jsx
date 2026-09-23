@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
         { withCredentials: true }
       );
 
-        console.log("getMe RESPONSE:", res);
+      console.log("getMe RESPONSE:", res);
       setUser(res.data.user);
     } catch (err) {
       console.error("Error fetching user in fetchUser:", err, err?.response?.data);

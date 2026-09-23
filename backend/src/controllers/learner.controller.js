@@ -1,4 +1,3 @@
-import { env } from "../config/env.js";
 import pool from "../config/mysql.js";
 
 
@@ -104,4 +103,4 @@ const getLearner = async(req, res) => {
   };
 
 
-  export default{getLearner , updateLearner}
+  export {getLearner , updateLearner}
