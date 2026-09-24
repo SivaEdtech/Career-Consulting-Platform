@@ -3,7 +3,9 @@ import authRoutes from "./src/routes/auth.routes.js";
 import proffesionalRoutes from "./src/routes/proffesional.route.js"
 import learnerRoutes from "./src/routes/learner.route.js"
 import slotRoutes from "./src/routes/slot.route.js"
+import bookRoutes from "./src/routes/book.routes.js"
 import cookieParser from "cookie-parser";
+
 import cors from "cors";
 import {env} from "./src/config/env.js"
 
@@ -23,6 +25,7 @@ app.use("/api",authRoutes)
 app.use("/api",learnerRoutes)
 app.use("/api", proffesionalRoutes)
 app.use("/api",slotRoutes)
+app.use("/api",bookRoutes)
 
 
 export default app;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { Calendar, DollarSign, Globe } from 'lucide-react';
@@ -6,11 +7,15 @@ import { Calendar, DollarSign, Globe } from 'lucide-react';
 export default function ProfessionalViewProfile() {
   const { professionalId } = useParams();
 
-  console.log(professionalId)
+  const navigate = useNavigate();
 
   const [profile, setProfile] = useState(null);
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // NEW: booking state
+  const [bookingMessage, setBookingMessage] = useState("");
+  const [bookingLoading, setBookingLoading] = useState(false);
 
   useEffect(() => {
     if (!professionalId) return;
@@ -25,7 +30,6 @@ export default function ProfessionalViewProfile() {
         `${import.meta.env.VITE_BACKEND_URL}/api/professionals/${professionalId}`,
         { withCredentials: true }
       );
-      console.log("prof:", res)
       setProfile(res.data.professional);
       fetchSlots();
     } catch (err) {
@@ -41,10 +45,39 @@ export default function ProfessionalViewProfile() {
         `${import.meta.env.VITE_BACKEND_URL}/api/professionals/${professionalId}/slots`,
         { withCredentials: true }
       );
-      console.log("response of slots:", res)
       setSlots(res.data?.slots || res.data || []);
     } catch (err) {
       console.error('Error fetching slots:', err);
+    }
+  };
+
+  const handleBook = async (slotId) => {
+    setBookingMessage("");
+    setBookingLoading(true);
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/api/bookings`,
+        {
+          slot_id: slotId
+        },
+        {
+          withCredentials: true
+        }
+      );
+
+      // Show booking message first
+      setBookingMessage("Booking created! Redirecting to dashboard...");
+      setBookingLoading(false);
+
+      // Wait 1.5 seconds before redirect
+      setTimeout(() => {
+        navigate("/dashboard")
+      }, 1500);
+
+    } catch (error) {
+      setBookingLoading(false);
+      setBookingMessage("Error creating booking. Please try again.");
+      console.error(error);
     }
   };
 
@@ -59,6 +92,20 @@ export default function ProfessionalViewProfile() {
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6 font-sans text-black">
       <>
+        {/* Booking success/error message, overlay style */}
+        {bookingMessage && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+            <div className="bg-white px-8 py-6 rounded-xl shadow-lg flex flex-col items-center gap-2">
+              <span className="text-base font-semibold text-black">
+                {bookingMessage}
+              </span>
+              {bookingLoading && (
+                <span className="text-sm text-gray-400">Processing...</span>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Professional Profile Header */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row items-center gap-6">
           <img
@@ -73,7 +120,6 @@ export default function ProfessionalViewProfile() {
                 Professional
               </span>
             </div>
-            {/* <p className="text-sm text-gray-500">{profile?.email || 'No email provided'}</p> */}
             <p className="text-sm text-gray-700">{profile?.bio || 'No biography available.'}</p>
           </div>
         </div>
@@ -217,9 +263,8 @@ export default function ProfessionalViewProfile() {
                     </div>
                     <button
                       className="mt-2 md:mt-0 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 font-semibold transition text-sm"
-                      onClick={() => {
-                        alert(`Book Slot ID: ${slot.slot_id}`);
-                      }}
+                      onClick={() => handleBook(slot.slot_id) }
+                      disabled={!!bookingMessage}
                     >
                       Book Slot
                     </button>
