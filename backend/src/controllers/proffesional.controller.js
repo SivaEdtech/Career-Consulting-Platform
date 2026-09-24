@@ -132,7 +132,7 @@ const getAllProfessionals = async (req, res) => {
 
 const getProfessionalById = async (req, res) => {
     try {
-        const professionalId = req.params.proffesionalId;
+        const professionalId = req.params.professionalId;
         if (!professionalId) {
             return res.status(400).json({
                 message: "Professional ID is required"

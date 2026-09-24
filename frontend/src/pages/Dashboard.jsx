@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from "../api/axios";
@@ -38,81 +37,6 @@ import {
     Layers,
     Lightbulb
 } from 'lucide-react';
-
-const INITIAL_MENTORS = [
-    {
-        id: 'm1',
-        name: 'Elena Rostova',
-        title: 'Staff AI Engineer',
-        company: 'Meta',
-        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
-        rating: 4.9,
-        reviewsCount: 128,
-        experience: '9+ yrs',
-        rate: 120,
-        domain: 'AI & Data Science',
-        skills: ['PyTorch', 'LLMs', 'System Design', 'AI Ethics'],
-        bio: 'Helping engineers transition into Senior AI research & engineering roles. Ex-Google Brain.',
-        slots: [
-            { id: 's1', date: '2026-09-21', time: '10:00 AM', status: 'available' },
-            { id: 's2', date: '2026-09-21', time: '02:00 PM', status: 'available' },
-            { id: 's3', date: '2026-09-22', time: '11:00 AM', status: 'available' },
-        ]
-    },
-    {
-        id: 'm2',
-        name: 'Marcus Vance',
-        title: 'Principal Architect',
-        company: 'Stripe',
-        avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=300',
-        rating: 5.0,
-        reviewsCount: 94,
-        experience: '12+ yrs',
-        rate: 150,
-        domain: 'Engineering',
-        skills: ['Distributed Systems', 'Microservices', 'Go', 'Kubernetes'],
-        bio: 'Specialized in ultra-scalable distributed backend architecture & high-throughput payment pipelines.',
-        slots: [
-            { id: 's4', date: '2026-09-21', time: '04:00 PM', status: 'available' },
-            { id: 's5', date: '2026-09-23', time: '01:00 PM', status: 'available' },
-        ]
-    },
-    {
-        id: 'm3',
-        name: 'Sophia Chen',
-        title: 'VP of Product',
-        company: 'Airbnb',
-        avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=300',
-        rating: 4.95,
-        reviewsCount: 210,
-        experience: '11+ yrs',
-        rate: 140,
-        domain: 'Product & Business',
-        skills: ['Product Strategy', 'GTM Planning', 'PM Interviews', 'Growth'],
-        bio: 'Passion for guiding aspiring PMs to land mid-to-senior product roles at top tech companies.',
-        slots: [
-            { id: 's6', date: '2026-09-22', time: '03:00 PM', status: 'available' },
-            { id: 's7', date: '2026-09-24', time: '10:00 AM', status: 'available' },
-        ]
-    },
-    {
-        id: 'm4',
-        name: 'David Kim',
-        title: 'Lead Creative Director',
-        company: 'Vercel Design',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
-        rating: 4.88,
-        reviewsCount: 76,
-        experience: '8+ yrs',
-        rate: 110,
-        domain: 'Design & Creative',
-        skills: ['UI/UX Strategy', 'Design Systems', 'Brand Design', 'Portfolio Review'],
-        bio: 'Passionate about web performance, brand aesthetics, and mastering design systems.',
-        slots: [
-            { id: 's8', date: '2026-09-21', time: '06:00 PM', status: 'available' },
-        ]
-    }
-];
 
 const INITIAL_LEARNER_SESSIONS = [
     {
@@ -177,17 +101,16 @@ const INITIAL_REVIEWS = [
 
 export default function Dashboard() {
     const { user, loading } = useAuth();
-
-    const navigate = useNavigate();
-
-
-    // Safely define id after loading/user null checks (or use optional chaining)
+  
     const normalizedRole = user?.role ? user.role.toUpperCase() : undefined;
     const isLearner = normalizedRole === 'LEARNER';
     const isMentorOrProfessional = normalizedRole === 'PROFESSIONAL';
 
     // Dynamic state management
-    const [mentors] = useState(INITIAL_MENTORS);
+    const [mentors, setMentors] = useState([]);
+    const [mentorsLoading, setMentorsLoading] = useState(false);
+    const [mentorsError, setMentorsError] = useState(null);
+
     const [learnerSessions, setLearnerSessions] = useState(INITIAL_LEARNER_SESSIONS);
     const [mentorBookings] = useState(INITIAL_MENTOR_BOOKINGS);
     const [reviews] = useState(INITIAL_REVIEWS);
@@ -209,15 +132,49 @@ export default function Dashboard() {
     // Session Detail Modal State
     const [sessionDetailModal, setSessionDetailModal] = useState({ isOpen: false, session: null });
 
+    // Fetch mentors / professionals from backend API
+    useEffect(() => {
+        if (!isLearner) return;
+
+        const fetchMentors = async () => {
+            setMentorsLoading(true);
+            setMentorsError(null);
+            try {
+                const response = await axios.get(
+                    `${import.meta.env.VITE_BACKEND_URL}/api/professionals`,
+                    { withCredentials: true }
+                );
+
+                console.log("res prof:",response)
+               
+                const fetchedMentors = response.data?.professionals || [];
+                setMentors(fetchedMentors);
+            } catch (err) { 
+                console.error("Error fetching mentors:", err);
+                setMentorsError("Failed to load mentors. Please try again.");
+            } finally {
+                setMentorsLoading(false);
+            }
+        };
+
+        fetchMentors();
+    }, [isLearner]);
+
     // Filter Mentors
     const filteredMentors = useMemo(() => {
         return mentors.filter(m => {
-            const matchesDomain = selectedDomain === 'All' || m.domain === selectedDomain;
+            const domain = m.domain || m.specialty || '';
+            const name = m.name || '';
+            const title = m.title || m.role || '';
+            const company = m.company || '';
+            const skills = m.skills || [];
+
+            const matchesDomain = selectedDomain === 'All' || domain.toLowerCase() === selectedDomain.toLowerCase();
             const matchesSearch =
-                m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                m.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                m.skills.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
+                name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                skills.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
             return matchesDomain && matchesSearch;
         });
     }, [mentors, selectedDomain, searchQuery]);
@@ -249,7 +206,6 @@ export default function Dashboard() {
             setBookingTopic('');
         }, 1500);
     };
-
 
     const toggleSlotStatus = (id) => {
         setMentorSlots(mentorSlots.map(s => s.id === id ? { ...s, active: !s.active } : s));
@@ -288,7 +244,6 @@ export default function Dashboard() {
         );
     }
 
-    
     const currUserAccountId = user?.account_id;
 
     return (
@@ -366,6 +321,8 @@ export default function Dashboard() {
                 {isLearner ? (
                     <LearnerDashboardView
                         mentors={filteredMentors}
+                        mentorsLoading={mentorsLoading}
+                        mentorsError={mentorsError}
                         allDomains={['All', 'Engineering', 'AI & Data Science', 'Product & Business', 'Design & Creative', 'Finance & Consulting', 'Marketing']}
                         selectedDomain={selectedDomain}
                         setSelectedDomain={setSelectedDomain}
@@ -380,9 +337,7 @@ export default function Dashboard() {
                         mentorBookings={mentorBookings}
                         mentorSlots={mentorSlots}
                         setMentorSlots={setMentorSlots}
-                        // onAddSlot={handleAddSlot}
                         onToggleSlot={toggleSlotStatus}
-                        // onDeleteSlot={deleteSlot}
                         newSlotDate={newSlotDate}
                         setNewSlotDate={setNewSlotDate}
                         newSlotTime={newSlotTime}
@@ -402,7 +357,7 @@ export default function Dashboard() {
                         <div className="bg-gradient-to-b from-gray-100 to-slate-50 text-black p-6 flex justify-between items-start border-b border-gray-200">
                             <div className="flex items-center space-x-4">
                                 <img
-                                    src={bookingModal.mentor.avatar}
+                                    src={bookingModal.mentor.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300"}
                                     alt={bookingModal.mentor.name}
                                     className="w-14 h-14 rounded-2xl object-cover ring-2 ring-blue-500"
                                 />
@@ -412,9 +367,9 @@ export default function Dashboard() {
                                     <div className="flex items-center space-x-2 mt-1">
                                         <span className="inline-flex items-center text-xs font-bold text-black">
                                             <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 mr-1" />
-                                            {bookingModal.mentor.rating} ({bookingModal.mentor.reviewsCount})
+                                            {bookingModal.mentor.rating || '5.0'} ({bookingModal.mentor.reviewsCount || 0})
                                         </span>
-                                        <span className="text-gray-600 text-xs">• ${bookingModal.mentor.rate}/hr</span>
+                                        <span className="text-gray-600 text-xs">• ${bookingModal.mentor.rate || 100}/hr</span>
                                     </div>
                                 </div>
                             </div>
@@ -444,7 +399,7 @@ export default function Dashboard() {
                                             1. Select an Available Slot
                                         </label>
                                         <div className="grid grid-cols-2 gap-2.5">
-                                            {bookingModal.mentor.slots.map((slot) => {
+                                            {(bookingModal.mentor.slots || []).map((slot) => {
                                                 const isSelected = selectedSlot?.id === slot.id;
                                                 return (
                                                     <button
@@ -498,7 +453,7 @@ export default function Dashboard() {
                                                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                                 }`}
                                         >
-                                            Confirm Booking (${bookingModal.mentor.rate})
+                                            Confirm Booking (${bookingModal.mentor.rate || 100})
                                         </button>
                                     </div>
                                 </>
@@ -588,6 +543,8 @@ export default function Dashboard() {
 
 function LearnerDashboardView({
     mentors,
+    mentorsLoading,
+    mentorsError,
     allDomains,
     selectedDomain,
     setSelectedDomain,
@@ -597,6 +554,8 @@ function LearnerDashboardView({
     onBookSession,
     onOpenMeeting
 }) {
+
+    const navigate = useNavigate();
     return (
         <div className="space-y-12">
             {/* SECTION 2: Consult Top Mentors Online For Any Career Concern */}
@@ -619,7 +578,7 @@ function LearnerDashboardView({
                     </button>
                 </div>
 
-                {/* Circular Category Concerns Grid (Transparent / Seamless Layout) */}
+                {/* Circular Category Concerns Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-8">
                     {/* Item 1 */}
                     <div
@@ -747,48 +706,77 @@ function LearnerDashboardView({
                 </div>
 
                 {/* Mentors Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-2">
-                    {mentors.map((mentor) => (
-                        <div key={mentor.id} className="bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between">
-                            <div>
-                                <div className="h-48 bg-gray-100 relative overflow-hidden">
-                                    <img
-                                        src={mentor.avatar}
-                                        alt={mentor.name}
-                                        className="w-full h-full object-cover"
-                                    />
-                                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-lg text-xs font-bold text-gray-900 shadow-xs flex items-center">
-                                        <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 mr-1" />
-                                        {mentor.rating}
+                {mentorsLoading ? (
+                    <div className="flex items-center justify-center py-16">
+                        <Loader2 className="w-8 h-8 text-blue-600 animate-spin mr-2" />
+                        <span className="text-sm text-gray-600 font-semibold">Loading available mentors...</span>
+                    </div>
+                ) : mentorsError ? (
+                    <div className="text-center py-12 bg-red-50 rounded-2xl border border-red-200">
+                        <p className="text-sm font-bold text-red-600">{mentorsError}</p>
+                    </div>
+                ) : mentors.length === 0 ? (
+                    <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                        <p className="text-sm font-bold text-gray-700">No mentors found</p>
+                        <p className="text-xs text-gray-500 mt-1">Try selecting a different domain or clearing search filters.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-2">
+                        {mentors.slice(0, 4).map((mentor) => (
+                            <div
+                                key={mentor.id}
+                                className="bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between cursor-pointer"
+                                onClick={() => navigate(`/professionals/${mentor.id}`)}
+                           
+                                tabIndex={0}
+                                role="button"
+                            >
+                                <div>
+                                    <div className="h-48 bg-gray-100 relative overflow-hidden">
+                                        <img
+                                            src={mentor.profile_photo
+                                                || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300"}
+                                            alt={mentor.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-lg text-xs font-bold text-gray-900 shadow-xs flex items-center">
+                                            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 mr-1" />
+                                            {mentor.rating || '5.0'}
+                                        </div>
+                                    </div>
+                                    <div className="p-4 space-y-2">
+                                        <h3 className="font-bold text-base text-gray-900 leading-snug">{mentor.name}</h3>
+                                        <p className="text-xs text-blue-600 font-semibold">{mentor.title || mentor.role} @ {mentor.company}</p>
+                                        <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{mentor.bio}</p>
+
+                                        <div className="flex flex-wrap gap-1 pt-1">
+                                            {(mentor.skills || []).slice(0, 3).map((s, i) => (
+                                                <span key={i} className="text-[10px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">
+                                                    {s}
+                                                </span>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="p-4 space-y-2">
-                                    <h3 className="font-bold text-base text-gray-900 leading-snug">{mentor.name}</h3>
-                                    <p className="text-xs text-blue-600 font-semibold">{mentor.title} @ {mentor.company}</p>
-                                    <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{mentor.bio}</p>
 
-                                    <div className="flex flex-wrap gap-1 pt-1">
-                                        {mentor.skills.slice(0, 3).map((s, i) => (
-                                            <span key={i} className="text-[10px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">
-                                                {s}
-                                            </span>
-                                        ))}
-                                    </div>
+                                <div className="p-4 pt-0 border-t border-gray-100 mt-2 flex items-center justify-between" onClick={e => e.stopPropagation()}>
+                                    <span className="text-sm font-extrabold text-gray-900">${mentor.rate || 100}<span className="text-[10px] text-gray-500 font-normal">/hr</span></span>
+                                    <button
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            onBookSession(mentor);
+                                        }}
+                                        className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition shadow-xs"
+                                    >
+                                        Book 1:1 Call
+                                    </button>
                                 </div>
                             </div>
-
-                            <div className="p-4 pt-0 border-t border-gray-100 mt-2 flex items-center justify-between">
-                                <span className="text-sm font-extrabold text-gray-900">${mentor.rate}<span className="text-[10px] text-gray-500 font-normal">/hr</span></span>
-                                <button
-                                    onClick={() => onBookSession(mentor)}
-                                    className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition shadow-xs"
-                                >
-                                    Book 1:1 Call
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+              
+                )}
+          
             </section>
 
             {/* SECTION 4: Upcoming Booked Sessions Section */}
@@ -903,7 +891,6 @@ function MentorDashboardView({
     setMentorSlots,
     onAddSlot,
     onToggleSlot,
-    // onDeleteSlot,
     newSlotDate,
     setNewSlotDate,
     newSlotTime,
@@ -938,7 +925,6 @@ function MentorDashboardView({
                 `${import.meta.env.VITE_BACKEND_URL}/api/slots/me`,
                 { withCredentials: true }
             );
-            console.log("slots:", response)
             const slots = response.data.slots || [];
             setMentorSlots(slots);
         } catch (error) {
@@ -957,7 +943,7 @@ function MentorDashboardView({
 
     const createSlotAPI = async (e) => {
         e.preventDefault();
-        setSlotSuccess(null); // Ensure only one of error/success is shown
+        setSlotSuccess(null);
         setSlotSubmitError(null);
         try {
             const response = await axios.post(
@@ -1047,7 +1033,6 @@ function MentorDashboardView({
         <div className="space-y-8">
             {/* Stats Overview */}
             <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {/* ... unchanged ... */}
                 <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                         <div className="p-3 bg-blue-50 text-blue-600 rounded-xl border border-blue-100">
@@ -1094,12 +1079,9 @@ function MentorDashboardView({
 
             {/* Layout Split */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* ... unchanged left column ... */}
                 <div className="lg:col-span-2 space-y-8">
-                    {/* ... */}
                     {/* Active Learner Bookings */}
                     <section className="bg-white rounded-2xl p-6 shadow-xs border border-gray-200 space-y-4">
-                        {/* ... contents unchanged ... */}
                         <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                             <div>
                                 <h2 className="text-lg font-extrabold text-black">Upcoming Learner Consultations</h2>
@@ -1179,7 +1161,6 @@ function MentorDashboardView({
                 </div>
                 {/* Right: Slot Management */}
                 <section className="bg-white rounded-2xl p-6 shadow-xs border border-gray-200 space-y-5 h-fit">
-                    {/* ...unchanged until the slots list... */}
                     <div className="flex items-center justify-between border-b border-gray-200 pb-3">
                         <div className="flex items-center space-x-2">
                             <div className="p-2 bg-blue-600 text-white rounded-xl">
@@ -1278,7 +1259,7 @@ function MentorDashboardView({
                             <span>Add Available Slot</span>
                         </button>
                     </form>
-                    {/* Slots List (Scrollable Container with Max Height) */}
+                    {/* Slots List */}
                     <div className="space-y-2.5">
                         <div className="flex items-center justify-between">
                             <p className="text-xs font-bold uppercase tracking-wider text-gray-700">Current Schedule</p>
@@ -1332,7 +1313,7 @@ function MentorDashboardView({
                             </div>
                         )}
                     </div>
-                    {/* Simple Delete Confirmation Modal */}
+                    {/* Delete Confirmation Modal */}
                     {deleteModalOpen && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[2px] transition-all">
                             <div className="bg-white rounded-xl shadow-xl p-5 sm:p-6 md:p-7 max-w-[96vw] w-full max-w-xs sm:max-w-sm md:max-w-xs border border-gray-100 transition-all">
