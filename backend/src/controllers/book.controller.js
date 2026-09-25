@@ -1,11 +1,12 @@
 import pool from "../config/mysql.js";
+import {createGoogleMeet} from "../services/googleCalendar.service.js"
 
 const createBooking = async (req, res) => {
   try {
     const { slot_id } = req.body;
     const userId = req.user?.account_id;
 
-    console.log(userId)
+    // console.log(userId)
 
     if (!slot_id || !userId) {
       return res.status(400).json({ message: "Missing slot_id or user_id" });
@@ -25,7 +26,7 @@ const createBooking = async (req, res) => {
 
     // Find the professional ID associated with the slot
     const [slotRows] = await pool.query(
-      "SELECT professional_id FROM slots WHERE slot_id = ?",
+      "SELECT professional_id , date, start_time FROM slots WHERE slot_id = ?",
       [slot_id]
     );
     if (!slotRows.length) {
@@ -33,7 +34,11 @@ const createBooking = async (req, res) => {
     }
 
     const professional_id = slotRows[0].professional_id;
+    const date = slotRows[0].date;
+    const startTime = slotRows[0].start_time;
 
+    console.log("date:",date);
+    console.log("startTime:",startTime);
 
     const [learnerResult] = await pool.query(
       "SELECT id FROM learner WHERE account_id = ?",
@@ -45,10 +50,16 @@ const createBooking = async (req, res) => {
     }
     const learner_id = learnerResult[0].id;
 
+
+    const { meetingLink } = await createGoogleMeet(
+      date,
+      startTime
+    );
+
     // Insert the booking into the booking table
     const [result] = await pool.query(
-      "INSERT INTO bookings (professional_id, learner_id, slot_id ) VALUES (?, ?, ?)",
-      [professional_id , learner_id, slot_id ]
+      "INSERT INTO bookings (professional_id, learner_id, slot_id, meet_link ) VALUES (?, ?, ?, ?)",
+      [professional_id , learner_id, slot_id, meetingLink]
     );
 
     await pool.query(
@@ -218,7 +229,7 @@ const getLearnerBookings = async (req, res) => {
   try {
     const accountId = req.user?.account_id;
     
-    console.log("Account" , accountId)
+    // console.log("Account" , accountId)
 
     const [learnerRows] = await pool.query(
       "SELECT id FROM learner WHERE account_id = ?",
@@ -250,6 +261,7 @@ const getLearnerBookings = async (req, res) => {
           b.slot_id,
           b.booking_status,
           b.created_at,
+          b.meet_link,
 
           p.id AS professional_id,
           p.name AS professional_name,
@@ -306,6 +318,7 @@ const getProfessionalBookings = async (req, res) => {
           b.slot_id,
           b.booking_status,
           b.created_at,
+          b.meet_link,
 
           l.id AS learner_id,
           l.name AS learner_name,

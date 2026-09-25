@@ -24,7 +24,7 @@ import {
     CheckCircle2,
     GraduationCap,
     MessageSquare,
-    ExternalLink
+    PlayCircle
 } from 'lucide-react';
 
 const INITIAL_REVIEWS = [
@@ -49,8 +49,6 @@ const INITIAL_REVIEWS = [
 export default function Dashboard() {
     const { user, loading } = useAuth();
     const navigate = useNavigate();
-
-    console.log(user)
 
     const normalizedRole = user?.role ? user.role.toUpperCase() : undefined;
     const isLearner = normalizedRole === 'LEARNER';
@@ -272,7 +270,7 @@ export default function Dashboard() {
 }
 
 {/* Helper component for rendering individual booking cards */}
-function BookingsSection({ bookings, loading, error, isMentor = false }) {
+function BookingsSection({ bookings, loading, error, isMentor = false, onLaunchMeeting }) {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-10 bg-white rounded-2xl border border-gray-200">
@@ -321,9 +319,14 @@ function BookingsSection({ bookings, loading, error, isMentor = false }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {bookings.map((booking) => {
                 const name = isMentor ? booking.learner_name : booking.professional_name;
-                // const photo = isMentor ? booking.learner_profile_photo : booking.professional_profile_photo;
-                const defaultPhoto = isMentor;
+                const photo = isMentor ? booking.learner_profile_photo : booking.professional_profile_photo;
+                const defaultPhoto = isMentor 
+                    ? "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"
+                    : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150";
+                
                 const bio = isMentor ? booking.learner_bio : booking.professional_bio;
+                const meetLink = booking.meet_link;
+                const isLaunched = booking.isLaunched || false;
 
                 return (
                     <div
@@ -347,11 +350,11 @@ function BookingsSection({ bookings, loading, error, isMentor = false }) {
 
                         {/* Person Info */}
                         <div className="flex items-start space-x-3">
-                            {/* <img
+                            <img
                                 src={photo || defaultPhoto}
                                 alt={name || 'User Avatar'}
                                 className="w-12 h-12 rounded-xl object-cover ring-2 ring-gray-100 shrink-0"
-                            /> */}
+                            />
                             <div className="space-y-1 min-w-0 flex-1">
                                 <h4 className="text-sm font-bold text-gray-900 truncate">
                                     {name || (isMentor ? 'Learner' : 'Mentor')}
@@ -386,13 +389,42 @@ function BookingsSection({ bookings, loading, error, isMentor = false }) {
 
                         {/* Action Buttons */}
                         <div className="flex items-center space-x-2 pt-1">
-                            <button
-                                className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition shadow-xs"
-                                onClick={() => alert(`Joining call for booking #${booking.booking_id}`)}
-                            >
-                                <Video className="w-3.5 h-3.5" />
-                                <span>Join Call</span>
-                            </button>
+                            {isMentor ? (
+                                <button
+                                    className={`flex-1 py-2 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition shadow-xs ${
+                                        isLaunched
+                                            ? 'bg-emerald-600 hover:bg-emerald-700'
+                                            : 'bg-blue-600 hover:bg-blue-700'
+                                    }`}
+                                    onClick={() => {
+                                        if (onLaunchMeeting) onLaunchMeeting(booking.booking_id);
+                                        if (meetLink) {
+                                            window.open(meetLink, '_blank');
+                                        }
+                                    }}
+                                >
+                                    <PlayCircle className="w-3.5 h-3.5" />
+                                    <span>{isLaunched ? 'Meeting Launched (Rejoin)' : 'Launch Meeting'}</span>
+                                </button>
+                            ) : (
+                                <button
+                                    disabled={!isLaunched}
+                                    className={`flex-1 py-2 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition shadow-xs ${
+                                        isLaunched
+                                            ? 'bg-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-emerald-200'
+                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-70'
+                                    }`}
+                                    onClick={() => {
+                                        if (isLaunched && meetLink) {
+                                            window.open(meetLink, '_blank');
+                                        }
+                                    }}
+                                >
+                                    <Video className="w-3.5 h-3.5" />
+                                    <span>{isLaunched ? 'Join Meeting' : 'Waiting for Mentor'}</span>
+                                </button>
+                            )}
+
                             <button
                                 className="p-2 border border-gray-200 hover:bg-gray-50 text-gray-600 rounded-xl transition"
                                 title="Message"
@@ -713,6 +745,14 @@ function MentorDashboardView({
         fetchProfessionalBookings();
     }, []);
 
+    const handleLaunchMeeting = (bookingId) => {
+        setBookings(prevBookings =>
+            prevBookings.map(b =>
+                b.booking_id === bookingId ? { ...b, isLaunched: true } : b
+            )
+        );
+    };
+
     useEffect(() => {
         let timer;
         if (slotSubmitError) {
@@ -907,6 +947,7 @@ function MentorDashboardView({
                             loading={bookingsLoading}
                             error={bookingsError}
                             isMentor={true}
+                            onLaunchMeeting={handleLaunchMeeting}
                         />
                     </section>
 
