@@ -13,6 +13,8 @@ const authUser = async (req, res, next) => {
       });
     }
 
+    // console.log("user token:", token)
+
     
     let decoded;
     try {
@@ -35,6 +37,8 @@ const authUser = async (req, res, next) => {
         message: "User not found",
       });
     }
+
+    // console.log("account:",account)
 
     req.user = account;
     next();

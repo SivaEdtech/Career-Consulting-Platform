@@ -1,5 +1,4 @@
-
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from "../api/axios";
 import { useAuth } from "../context/AuthContext";
@@ -9,247 +8,70 @@ import {
     Star,
     Calendar,
     Clock,
-    Video,
-    Search,
-    Filter,
     Plus,
     Trash2,
-    DollarSign,
-    TrendingUp,
     Award,
-    Users,
-    ChevronRight,
     Bell,
     Sparkles,
     Shield,
-    X,
-    Check,
     Loader2,
-    ExternalLink,
-    CheckCircle2,
-    MessageSquare,
-    Copy,
-    FileText,
-    Target,
     Compass,
-    BookOpen,
-    GraduationCap,
-    Globe,
     Layers,
-    Lightbulb
+    Lightbulb,
+    DollarSign,
+    Video,
+    CheckCircle2,
+    GraduationCap,
+    MessageSquare,
+    PlayCircle,
+    ExternalLink,
+    Copy,
+    Check
 } from 'lucide-react';
-
-const INITIAL_MENTORS = [
-    {
-        id: 'm1',
-        name: 'Elena Rostova',
-        title: 'Staff AI Engineer',
-        company: 'Meta',
-        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
-        rating: 4.9,
-        reviewsCount: 128,
-        experience: '9+ yrs',
-        rate: 120,
-        domain: 'AI & Data Science',
-        skills: ['PyTorch', 'LLMs', 'System Design', 'AI Ethics'],
-        bio: 'Helping engineers transition into Senior AI research & engineering roles. Ex-Google Brain.',
-        slots: [
-            { id: 's1', date: '2026-09-21', time: '10:00 AM', status: 'available' },
-            { id: 's2', date: '2026-09-21', time: '02:00 PM', status: 'available' },
-            { id: 's3', date: '2026-09-22', time: '11:00 AM', status: 'available' },
-        ]
-    },
-    {
-        id: 'm2',
-        name: 'Marcus Vance',
-        title: 'Principal Architect',
-        company: 'Stripe',
-        avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=300',
-        rating: 5.0,
-        reviewsCount: 94,
-        experience: '12+ yrs',
-        rate: 150,
-        domain: 'Engineering',
-        skills: ['Distributed Systems', 'Microservices', 'Go', 'Kubernetes'],
-        bio: 'Specialized in ultra-scalable distributed backend architecture & high-throughput payment pipelines.',
-        slots: [
-            { id: 's4', date: '2026-09-21', time: '04:00 PM', status: 'available' },
-            { id: 's5', date: '2026-09-23', time: '01:00 PM', status: 'available' },
-        ]
-    },
-    {
-        id: 'm3',
-        name: 'Sophia Chen',
-        title: 'VP of Product',
-        company: 'Airbnb',
-        avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=300',
-        rating: 4.95,
-        reviewsCount: 210,
-        experience: '11+ yrs',
-        rate: 140,
-        domain: 'Product & Business',
-        skills: ['Product Strategy', 'GTM Planning', 'PM Interviews', 'Growth'],
-        bio: 'Passion for guiding aspiring PMs to land mid-to-senior product roles at top tech companies.',
-        slots: [
-            { id: 's6', date: '2026-09-22', time: '03:00 PM', status: 'available' },
-            { id: 's7', date: '2026-09-24', time: '10:00 AM', status: 'available' },
-        ]
-    },
-    {
-        id: 'm4',
-        name: 'David Kim',
-        title: 'Lead Creative Director',
-        company: 'Vercel Design',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
-        rating: 4.88,
-        reviewsCount: 76,
-        experience: '8+ yrs',
-        rate: 110,
-        domain: 'Design & Creative',
-        skills: ['UI/UX Strategy', 'Design Systems', 'Brand Design', 'Portfolio Review'],
-        bio: 'Passionate about web performance, brand aesthetics, and mastering design systems.',
-        slots: [
-            { id: 's8', date: '2026-09-21', time: '06:00 PM', status: 'available' },
-        ]
-    }
-];
-
-const INITIAL_LEARNER_SESSIONS = [
-    {
-        id: 'ls1',
-        mentorName: 'Elena Rostova',
-        mentorTitle: 'Staff AI Engineer',
-        mentorCompany: 'Meta',
-        mentorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
-        date: '2026-09-20',
-        time: '03:00 PM',
-        topic: 'Transitioning to Senior AI Engineering & Portfolio Review',
-        meetingLink: 'https://meet.google.com/nav-ai-session',
-        status: 'Upcoming'
-    }
-];
-
-const INITIAL_MENTOR_BOOKINGS = [
-    {
-        id: 'mb1',
-        studentName: 'Alex Rivera',
-        studentAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=300',
-        careerInterest: 'AI / Machine Learning',
-        date: '2026-09-20',
-        time: '03:00 PM',
-        topic: 'Code review for LLM fine-tuning pipeline & resume feedback.',
-        meetingLink: 'https://meet.google.com/nav-ai-session',
-        amount: 120,
-        status: 'Confirmed'
-    },
-    {
-        id: 'mb2',
-        studentName: 'Priya Sharma',
-        studentAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=300',
-        careerInterest: 'Backend Architecture',
-        date: '2026-09-22',
-        time: '05:00 PM',
-        topic: 'System design strategies for global microservices platform.',
-        meetingLink: 'https://meet.google.com/nav-sys-design',
-        amount: 120,
-        status: 'Confirmed'
-    }
-];
-
-const INITIAL_REVIEWS = [
-    {
-        id: 'r1',
-        studentName: 'Sarah Jenkins',
-        studentAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150',
-        rating: 5,
-        date: '2 days ago',
-        comment: 'Elena provided incredible insights into LLM fine-tuning and gave concrete actionable feedback on my portfolio.'
-    },
-    {
-        id: 'r2',
-        studentName: 'Devon Miller',
-        studentAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150',
-        rating: 5,
-        date: '1 week ago',
-        comment: 'Clear, concise, and deeply practical career mentorship. Unlocked my confidence for upcoming top-tier interviews!'
-    }
-];
 
 export default function Dashboard() {
     const { user, loading } = useAuth();
-
     const navigate = useNavigate();
 
-
-    // Safely define id after loading/user null checks (or use optional chaining)
     const normalizedRole = user?.role ? user.role.toUpperCase() : undefined;
     const isLearner = normalizedRole === 'LEARNER';
     const isMentorOrProfessional = normalizedRole === 'PROFESSIONAL';
 
     // Dynamic state management
-    const [mentors] = useState(INITIAL_MENTORS);
-    const [learnerSessions, setLearnerSessions] = useState(INITIAL_LEARNER_SESSIONS);
-    const [mentorBookings] = useState(INITIAL_MENTOR_BOOKINGS);
-    const [reviews] = useState(INITIAL_REVIEWS);
-
-    // Search & Filter State
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedDomain, setSelectedDomain] = useState('All');
-
-    // Booking Modal State
-    const [bookingModal, setBookingModal] = useState({ isOpen: false, mentor: null });
-    const [selectedSlot, setSelectedSlot] = useState(null);
-    const [bookingTopic, setBookingTopic] = useState('');
-    const [bookingSuccess, setBookingSuccess] = useState(false);
+    const [mentors, setMentors] = useState([]);
+    const [mentorsLoading, setMentorsLoading] = useState(false);
+    const [mentorsError, setMentorsError] = useState(null);
 
     // Mentor Slot Management State
     const [mentorSlots, setMentorSlots] = useState([]);
     const [newSlotDate, setNewSlotDate] = useState('');
     const [newSlotTime, setNewSlotTime] = useState('10:00 AM');
-    // Session Detail Modal State
-    const [sessionDetailModal, setSessionDetailModal] = useState({ isOpen: false, session: null });
 
-    // Filter Mentors
-    const filteredMentors = useMemo(() => {
-        return mentors.filter(m => {
-            const matchesDomain = selectedDomain === 'All' || m.domain === selectedDomain;
-            const matchesSearch =
-                m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                m.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                m.skills.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
-            return matchesDomain && matchesSearch;
-        });
-    }, [mentors, selectedDomain, searchQuery]);
+    // Fetch mentors / professionals from backend API for Learner
+    useEffect(() => {
+        if (!isLearner) return;
 
-    // Handle Confirm Booking
-    const handleConfirmBooking = () => {
-        if (!selectedSlot || !bookingModal.mentor) return;
+        const fetchMentors = async () => {
+            setMentorsLoading(true);
+            setMentorsError(null);
+            try {
+                const response = await axios.get(
+                    `${import.meta.env.VITE_BACKEND_URL}/api/professionals`,
+                    { withCredentials: true }
+                );
 
-        const newSession = {
-            id: `ls-${Date.now()}`,
-            mentorName: bookingModal.mentor.name,
-            mentorTitle: bookingModal.mentor.title,
-            mentorCompany: bookingModal.mentor.company,
-            mentorAvatar: bookingModal.mentor.avatar,
-            date: selectedSlot.date,
-            time: selectedSlot.time,
-            topic: bookingTopic || 'General Career Consultation & Portfolio Review',
-            meetingLink: 'https://meet.google.com/nav-session-live',
-            status: 'Upcoming'
+                const fetchedMentors = response.data?.professionals || [];
+                setMentors(fetchedMentors);
+            } catch (err) { 
+                console.error("Error fetching mentors:", err);
+                setMentorsError("Failed to load mentors. Please try again.");
+            } finally {
+                setMentorsLoading(false);
+            }
         };
 
-        setLearnerSessions([newSession, ...learnerSessions]);
-        setBookingSuccess(true);
-
-        setTimeout(() => {
-            setBookingSuccess(false);
-            setBookingModal({ isOpen: false, mentor: null });
-            setSelectedSlot(null);
-            setBookingTopic('');
-        }, 1500);
-    };
-
+        fetchMentors();
+    }, [isLearner]);
 
     const toggleSlotStatus = (id) => {
         setMentorSlots(mentorSlots.map(s => s.id === id ? { ...s, active: !s.active } : s));
@@ -288,7 +110,6 @@ export default function Dashboard() {
         );
     }
 
-    
     const currUserAccountId = user?.account_id;
 
     return (
@@ -310,20 +131,6 @@ export default function Dashboard() {
                             </span>
                         </div>
                     </div>
-
-                    {/* Search Bar in Header for Learner */}
-                    {isLearner && (
-                        <div className="hidden md:flex flex-1 max-w-md mx-8 relative">
-                            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search domain, role, or mentor..."
-                                className="w-full pl-10 pr-4 py-2 text-xs border border-gray-200 rounded-full focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50/80 text-black placeholder-gray-400 transition"
-                            />
-                        </div>
-                    )}
 
                     {/* Right User Actions */}
                     <div className="flex items-center space-x-4">
@@ -365,210 +172,24 @@ export default function Dashboard() {
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-10">
                 {isLearner ? (
                     <LearnerDashboardView
-                        mentors={filteredMentors}
-                        allDomains={['All', 'Engineering', 'AI & Data Science', 'Product & Business', 'Design & Creative', 'Finance & Consulting', 'Marketing']}
-                        selectedDomain={selectedDomain}
-                        setSelectedDomain={setSelectedDomain}
-                        searchQuery={searchQuery}
-                        setSearchQuery={setSearchQuery}
-                        learnerSessions={learnerSessions}
-                        onBookSession={(mentor) => setBookingModal({ isOpen: true, mentor })}
-                        onOpenMeeting={(url) => window.open(url, '_blank')}
+                        mentors={mentors}
+                        mentorsLoading={mentorsLoading}
+                        mentorsError={mentorsError}
                     />
                 ) : isMentorOrProfessional ? (
                     <MentorDashboardView
-                        mentorBookings={mentorBookings}
                         mentorSlots={mentorSlots}
                         setMentorSlots={setMentorSlots}
-                        // onAddSlot={handleAddSlot}
                         onToggleSlot={toggleSlotStatus}
-                        // onDeleteSlot={deleteSlot}
                         newSlotDate={newSlotDate}
                         setNewSlotDate={setNewSlotDate}
                         newSlotTime={newSlotTime}
                         setNewSlotTime={setNewSlotTime}
-                        reviews={reviews}
-                        onViewDetails={(session) => setSessionDetailModal({ isOpen: true, session })}
                     />
                 ) : (
                     <div className="py-10 text-center text-gray-500">No dashboard available for your role.</div>
                 )}
             </main>
-
-            {/* Booking Modal */}
-            {bookingModal.isOpen && bookingModal.mentor && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-gray-200 flex flex-col">
-                        <div className="bg-gradient-to-b from-gray-100 to-slate-50 text-black p-6 flex justify-between items-start border-b border-gray-200">
-                            <div className="flex items-center space-x-4">
-                                <img
-                                    src={bookingModal.mentor.avatar}
-                                    alt={bookingModal.mentor.name}
-                                    className="w-14 h-14 rounded-2xl object-cover ring-2 ring-blue-500"
-                                />
-                                <div>
-                                    <h3 className="text-lg font-bold text-black">{bookingModal.mentor.name}</h3>
-                                    <p className="text-xs text-gray-700 font-medium">{bookingModal.mentor.title} @ {bookingModal.mentor.company}</p>
-                                    <div className="flex items-center space-x-2 mt-1">
-                                        <span className="inline-flex items-center text-xs font-bold text-black">
-                                            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 mr-1" />
-                                            {bookingModal.mentor.rating} ({bookingModal.mentor.reviewsCount})
-                                        </span>
-                                        <span className="text-gray-600 text-xs">• ${bookingModal.mentor.rate}/hr</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setBookingModal({ isOpen: false, mentor: null })}
-                                className="text-gray-500 hover:text-black p-1 rounded-full hover:bg-gray-200 transition"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <div className="p-6 space-y-5">
-                            {bookingSuccess ? (
-                                <div className="py-8 text-center space-y-3">
-                                    <div className="w-16 h-16 bg-black text-blue-600 rounded-full flex items-center justify-center mx-auto border border-blue-200 shadow-xs">
-                                        <Check className="w-8 h-8" />
-                                    </div>
-                                    <h4 className="text-xl font-extrabold text-black">Session Confirmed!</h4>
-                                    <p className="text-xs text-gray-600">
-                                        Your 1:1 mentorship session has been successfully scheduled.
-                                    </p>
-                                </div>
-                            ) : (
-                                <>
-                                    <div>
-                                        <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                                            1. Select an Available Slot
-                                        </label>
-                                        <div className="grid grid-cols-2 gap-2.5">
-                                            {bookingModal.mentor.slots.map((slot) => {
-                                                const isSelected = selectedSlot?.id === slot.id;
-                                                return (
-                                                    <button
-                                                        key={slot.id}
-                                                        type="button"
-                                                        onClick={() => setSelectedSlot(slot)}
-                                                        className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${isSelected
-                                                            ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-500/20'
-                                                            : 'border-gray-200 hover:border-blue-400 bg-white'
-                                                            }`}
-                                                    >
-                                                        <div className="flex items-center space-x-1.5 text-xs font-bold text-black">
-                                                            <Calendar className="w-3.5 h-3.5 text-blue-600" />
-                                                            <span>{slot.date}</span>
-                                                        </div>
-                                                        <div className="flex items-center space-x-1.5 text-xs text-gray-700 font-bold mt-1">
-                                                            <Clock className="w-3.5 h-3.5 text-gray-500" />
-                                                            <span>{slot.time}</span>
-                                                        </div>
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                                            2. Topic & Notes
-                                        </label>
-                                        <textarea
-                                            rows={3}
-                                            value={bookingTopic}
-                                            onChange={(e) => setBookingTopic(e.target.value)}
-                                            placeholder="e.g. Career guidance, portfolio review, interview advice, domain transition..."
-                                            className="w-full p-3 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-600 focus:outline-none bg-gray-50 text-black placeholder-gray-400"
-                                        />
-                                    </div>
-
-                                    <div className="flex space-x-3 pt-2">
-                                        <button
-                                            onClick={() => setBookingModal({ isOpen: false, mentor: null })}
-                                            className="flex-1 py-2.5 px-4 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-bold transition"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            disabled={!selectedSlot}
-                                            onClick={handleConfirmBooking}
-                                            className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition ${selectedSlot
-                                                ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md'
-                                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                                }`}
-                                        >
-                                            Confirm Booking (${bookingModal.mentor.rate})
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Session Detail Modal */}
-            {sessionDetailModal.isOpen && sessionDetailModal.session && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-gray-200">
-                        <div className="bg-gradient-to-b from-gray-100 to-slate-50 text-black p-5 flex justify-between items-center border-b border-gray-200">
-                            <h3 className="font-extrabold text-base flex items-center space-x-2">
-                                <Video className="w-5 h-5 text-blue-600" />
-                                <span>Session Overview</span>
-                            </h3>
-                            <button
-                                onClick={() => setSessionDetailModal({ isOpen: false, session: null })}
-                                className="text-gray-500 hover:text-black p-1 rounded-full hover:bg-gray-200 transition"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <div className="p-6 space-y-4">
-                            <div className="flex items-center space-x-3 bg-gray-50 p-3.5 rounded-2xl border border-gray-200">
-                                <img
-                                    src={sessionDetailModal.session.studentAvatar}
-                                    alt={sessionDetailModal.session.studentName}
-                                    className="w-12 h-12 rounded-full object-cover ring-2 ring-gray-300"
-                                />
-                                <div>
-                                    <p className="text-sm font-bold text-black">{sessionDetailModal.session.studentName}</p>
-                                    <p className="text-xs text-gray-600 font-semibold">{sessionDetailModal.session.careerInterest}</p>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2 text-xs">
-                                <div className="flex justify-between py-1.5 border-b border-gray-200">
-                                    <span className="text-gray-600 font-medium">Date & Time:</span>
-                                    <span className="font-bold text-black">{sessionDetailModal.session.date} at {sessionDetailModal.session.time}</span>
-                                </div>
-                                <div className="flex justify-between py-1.5 border-b border-gray-200">
-                                    <span className="text-gray-600 font-medium">Payout Amount:</span>
-                                    <span className="font-extrabold text-black">${sessionDetailModal.session.amount}.00</span>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                                    Student Notes
-                                </label>
-                                <p className="text-xs bg-gray-50 p-3 rounded-xl text-gray-800 border border-gray-200 leading-relaxed">
-                                    "{sessionDetailModal.session.topic}"
-                                </p>
-                            </div>
-
-                            <button
-                                onClick={() => window.open(sessionDetailModal.session.meetingLink, '_blank')}
-                                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-2 transition shadow-md"
-                            >
-                                <Video className="w-4 h-4" />
-                                <span>Launch Google Meet</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Footer */}
             <footer className="bg-slate-900 text-gray-400 py-8 border-t border-slate-800 text-xs mt-auto">
@@ -586,307 +207,368 @@ export default function Dashboard() {
     );
 }
 
+// Helper component for rendering individual booking cards
+function BookingsSection({ bookings, loading, error, isMentor = false, onLaunchMeeting, launchingBookingId, meetingErrors }) {
+    const [copiedBookingId, setCopiedBookingId] = useState(null);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-10 bg-white rounded-2xl border border-gray-200">
+                <Loader2 className="w-6 h-6 text-blue-600 animate-spin mr-2" />
+                <span className="text-xs font-semibold text-gray-600">Loading scheduled sessions...</span>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-4 bg-red-50 rounded-2xl border border-red-200 text-center">
+                <p className="text-xs font-bold text-red-600">{error}</p>
+            </div>
+        );
+    }
+
+    if (!bookings || bookings.length === 0) {
+        return (
+            <div className="text-center py-10 bg-white rounded-2xl border border-dashed border-gray-200">
+                <Calendar className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-xs font-bold text-gray-700">No Bookings Found</p>
+                <p className="text-[11px] text-gray-400 mt-0.5">
+                    {isMentor ? "You have no upcoming consultations scheduled." : "You haven't booked any mentorship calls yet."}
+                </p>
+            </div>
+        );
+    }
+
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    const formatTime = (timeStr) => {
+        if (!timeStr) return '';
+        const [hours, minutes] = timeStr.split(':');
+        const h = parseInt(hours, 10);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const formattedHours = h % 12 || 12;
+        return `${formattedHours}:${minutes} ${ampm}`;
+    };
+
+    const handleCopy = (bookingId, link) => {
+        navigator.clipboard.writeText(link);
+        setCopiedBookingId(bookingId);
+        setTimeout(() => setCopiedBookingId(null), 2000);
+    };
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {bookings.map((booking) => {
+                const name = isMentor ? booking.learner_name : booking.professional_name;
+                const photo = isMentor ? booking.learner_profile_photo : booking.professional_profile_photo;
+                const defaultPhoto = isMentor 
+                    ? "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"
+                    : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150";
+                
+                const bio = isMentor ? booking.learner_bio : booking.professional_bio;
+                
+                // Host link for professional; meet_link for learner
+                const hostLink = booking.host_meeting_link || booking.meet_link || booking.meetingLink;
+                const learnerLink = booking.meet_link || booking.meetingLink;
+                const activeLink = isMentor ? hostLink : learnerLink;
+
+                const isLaunched = booking.isLaunched || booking.booking_status === 'meeting_started' || Boolean(activeLink);
+                const isLaunching = launchingBookingId === booking.booking_id;
+                const bookingErr = meetingErrors?.[booking.booking_id];
+
+                return (
+                    <div
+                        key={booking.booking_id}
+                        className="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs hover:shadow-md transition flex flex-col justify-between space-y-4"
+                    >
+                        {/* Status Header */}
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                                Booking #{booking.booking_id}
+                            </span>
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold capitalize flex items-center gap-1 ${
+                                isLaunched
+                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                    : booking.booking_status === 'confirmed'
+                                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                    : 'bg-amber-50 text-amber-700 border border-amber-200'
+                            }`}>
+                                <CheckCircle2 className="w-3 h-3" />
+                                {isLaunched ? 'Meeting Started' : booking.booking_status}
+                            </span>
+                        </div>
+
+                        {/* Person Info */}
+                        <div className="flex items-start space-x-3">
+                            <img
+                                src={photo || defaultPhoto}
+                                alt={name || 'User Avatar'}
+                                className="w-12 h-12 rounded-xl object-cover ring-2 ring-gray-100 shrink-0"
+                            />
+                            <div className="space-y-1 min-w-0 flex-1">
+                                <h4 className="text-sm font-bold text-gray-900 truncate">
+                                    {name || (isMentor ? 'Learner' : 'Mentor')}
+                                </h4>
+
+                                {isMentor && booking.learner_education && (
+                                    <div className="flex items-center text-[11px] font-medium text-blue-600 gap-1">
+                                        <GraduationCap className="w-3.5 h-3.5 shrink-0" />
+                                        <span className="truncate">{booking.learner_education}</span>
+                                    </div>
+                                )}
+
+                                {bio && (
+                                    <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                                        {bio}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Timing Details */}
+                        <div className="bg-gray-50 rounded-xl p-3 border border-gray-100 flex items-center justify-between text-xs">
+                            <div className="flex items-center space-x-2 text-gray-700">
+                                <Calendar className="w-4 h-4 text-blue-600" />
+                                <span className="font-semibold">{formatDate(booking.date)}</span>
+                            </div>
+                            <div className="flex items-center space-x-1.5 text-gray-600 font-medium">
+                                <Clock className="w-3.5 h-3.5 text-gray-400" />
+                                <span>{formatTime(booking.start_time)}</span>
+                            </div>
+                        </div>
+
+                        {/* Meeting Link Callout (If Available) */}
+                        {activeLink && (
+                            <div className="bg-blue-50/70 border border-blue-100 rounded-xl p-3 text-xs space-y-1.5 transition-all">
+                                <div className="flex items-center justify-between text-blue-900 font-bold">
+                                    <span className="flex items-center gap-1.5">
+                                        <Video className="w-3.5 h-3.5 text-blue-600" />
+                                        {isMentor ? 'Host Meeting Link' : 'Learner Meeting Link'}
+                                    </span>
+                                    <button
+                                        onClick={() => handleCopy(booking.booking_id, activeLink)}
+                                        className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 focus:outline-none"
+                                    >
+                                        {copiedBookingId === booking.booking_id ? (
+                                            <>
+                                                <Check className="w-3 h-3 text-emerald-600" />
+                                                <span className="text-emerald-600">Copied!</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Copy className="w-3 h-3" />
+                                                <span>Copy Link</span>
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                                <div className="bg-white/80 border border-blue-100 rounded-lg p-2 text-[11px] font-mono text-gray-700 truncate select-all">
+                                    {activeLink}
+                                </div>
+                            </div>
+                        )}
+
+                        {bookingErr && (
+                            <p className="text-[11px] text-red-600 font-medium bg-red-50 p-2 rounded-lg border border-red-100">
+                                {bookingErr}
+                            </p>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex items-center space-x-2 pt-1">
+                            {isMentor ? (
+                                <button
+                                    disabled={isLaunching}
+                                    className={`flex-1 py-2 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition shadow-xs ${
+                                        isLaunching
+                                            ? 'bg-blue-400 cursor-not-allowed'
+                                            : isLaunched
+                                            ? 'bg-emerald-600 hover:bg-emerald-700'
+                                            : 'bg-blue-600 hover:bg-blue-700'
+                                    }`}
+                                    onClick={() => {
+                                        if (isLaunched && activeLink) {
+                                            window.open(activeLink, '_blank');
+                                        } else if (onLaunchMeeting) {
+                                            onLaunchMeeting(booking.booking_id);
+                                        }
+                                    }}
+                                >
+                                    {isLaunching ? (
+                                        <>
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            <span>Launching Meeting...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            {isLaunched ? <ExternalLink className="w-3.5 h-3.5" /> : <PlayCircle className="w-3.5 h-3.5" />}
+                                            <span>{isLaunched ? 'Open Host Room' : 'Launch Meeting'}</span>
+                                        </>
+                                    )}
+                                </button>
+                            ) : (
+                                <button
+                                    disabled={!isLaunched || !activeLink}
+                                    className={`flex-1 py-2 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition shadow-xs ${
+                                        isLaunched && activeLink
+                                            ? 'bg-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-emerald-200'
+                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-70'
+                                    }`}
+                                    onClick={() => {
+                                        if (isLaunched && activeLink) {
+                                            window.open(activeLink, '_blank');
+                                        }
+                                    }}
+                                >
+                                    <Video className="w-3.5 h-3.5" />
+                                    <span>{isLaunched && activeLink ? 'Join Meeting' : 'Waiting for Mentor'}</span>
+                                </button>
+                            )}
+
+                            <button
+                                className="p-2 border border-gray-200 hover:bg-gray-50 text-gray-600 rounded-xl transition"
+                                title="Message"
+                                onClick={() => alert(`Contacting user regarding booking #${booking.booking_id}`)}
+                            >
+                                <MessageSquare className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
 function LearnerDashboardView({
     mentors,
-    allDomains,
-    selectedDomain,
-    setSelectedDomain,
-    searchQuery,
-    setSearchQuery,
-    learnerSessions,
-    onBookSession,
-    onOpenMeeting
+    mentorsLoading,
+    mentorsError
 }) {
+    const navigate = useNavigate();
+
+    const [bookings, setBookings] = useState([]);
+    const [bookingsLoading, setBookingsLoading] = useState(false);
+    const [bookingsError, setBookingsError] = useState(null);
+
+    useEffect(() => {
+        const fetchLearnerBookings = async () => {
+            setBookingsLoading(true);
+            setBookingsError(null);
+            try {
+                const response = await axios.get(
+                    `${import.meta.env.VITE_BACKEND_URL}/api/learner/bookings`,
+                    { withCredentials: true }
+                );
+                console.log("learner bookings:", response);
+                setBookings(response.data?.bookings || []);
+            } catch (err) {
+                console.error('Error fetching learner bookings:', err);
+                setBookingsError("Failed to load bookings. Please try again.");
+            } finally {
+                setBookingsLoading(false);
+            }
+        };
+
+        fetchLearnerBookings();
+    }, []);
+
     return (
         <div className="space-y-12">
-            {/* SECTION 2: Consult Top Mentors Online For Any Career Concern */}
-            <section className="space-y-8 py-4">
-                {/* Section Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            {/* Scheduled Sessions / Bookings */}
+            <section className="space-y-4">
+                <div className="flex items-center justify-between border-b border-gray-200 pb-3">
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
-                            Consult top experts online for any career concern
+                        <h2 className="text-xl font-extrabold text-gray-900 tracking-tight">
+                            My Booked Sessions
                         </h2>
-                        <p className="text-sm text-gray-500 font-medium mt-1">
-                            Private online consultations with verified professionals across all specialties
+                        <p className="text-xs text-gray-500 font-medium mt-0.5">
+                            Manage your upcoming 1:1 career guidance calls
                         </p>
                     </div>
-                    <button
-                        onClick={() => setSelectedDomain('All')}
-                        className="text-xs font-semibold text-cyan-600 border border-cyan-400 hover:bg-cyan-50/50 px-4 py-2.5 rounded-md transition-colors self-start sm:self-auto bg-transparent"
-                    >
-                        View All Specialties
-                    </button>
+                    <span className="text-xs font-bold bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100">
+                        {bookings.length} {bookings.length === 1 ? 'Session' : 'Sessions'}
+                    </span>
                 </div>
 
-                {/* Circular Category Concerns Grid (Transparent / Seamless Layout) */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-8">
-                    {/* Item 1 */}
-                    <div
-                        onClick={() => setSelectedDomain('Engineering')}
-                        className="flex flex-col items-center text-center cursor-pointer group"
-                    >
-                        <div className="w-28 h-28 rounded-full bg-blue-50/70 border border-blue-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-blue-100/70 transition duration-200">
-                            <Layers className="w-12 h-12 text-blue-600 stroke-[1.5]" />
-                        </div>
-                        <h4 className="text-sm font-semibold text-gray-800 leading-snug px-2 min-h-[2.5rem] flex items-center justify-center">
-                            Engineering & Software
-                        </h4>
-                        <span className="text-[11px] font-bold text-cyan-500 tracking-wider group-hover:underline mt-1">
-                            CONSULT NOW
-                        </span>
-                    </div>
-
-                    {/* Item 2 */}
-                    <div
-                        onClick={() => setSelectedDomain('AI & Data Science')}
-                        className="flex flex-col items-center text-center cursor-pointer group"
-                    >
-                        <div className="w-28 h-28 rounded-full bg-teal-50/70 border border-teal-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-teal-100/70 transition duration-200">
-                            <Sparkles className="w-12 h-12 text-teal-600 stroke-[1.5]" />
-                        </div>
-                        <h4 className="text-sm font-semibold text-gray-800 leading-snug px-2 min-h-[2.5rem] flex items-center justify-center">
-                            AI & Data Science
-                        </h4>
-                        <span className="text-[11px] font-bold text-cyan-500 tracking-wider group-hover:underline mt-1">
-                            CONSULT NOW
-                        </span>
-                    </div>
-
-                    {/* Item 3 */}
-                    <div
-                        onClick={() => setSelectedDomain('Product & Business')}
-                        className="flex flex-col items-center text-center cursor-pointer group"
-                    >
-                        <div className="w-28 h-28 rounded-full bg-amber-50/70 border border-amber-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-amber-100/70 transition duration-200">
-                            <Briefcase className="w-12 h-12 text-amber-600 stroke-[1.5]" />
-                        </div>
-                        <h4 className="text-sm font-semibold text-gray-800 leading-snug px-2 min-h-[2.5rem] flex items-center justify-center">
-                            Product & Management
-                        </h4>
-                        <span className="text-[11px] font-bold text-cyan-500 tracking-wider group-hover:underline mt-1">
-                            CONSULT NOW
-                        </span>
-                    </div>
-
-                    {/* Item 4 */}
-                    <div
-                        onClick={() => setSelectedDomain('Design & Creative')}
-                        className="flex flex-col items-center text-center cursor-pointer group"
-                    >
-                        <div className="w-28 h-28 rounded-full bg-purple-50/70 border border-purple-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-purple-100/70 transition duration-200">
-                            <Compass className="w-12 h-12 text-purple-600 stroke-[1.5]" />
-                        </div>
-                        <h4 className="text-sm font-semibold text-gray-800 leading-snug px-2 min-h-[2.5rem] flex items-center justify-center">
-                            Design & Creative Art
-                        </h4>
-                        <span className="text-[11px] font-bold text-cyan-500 tracking-wider group-hover:underline mt-1">
-                            CONSULT NOW
-                        </span>
-                    </div>
-
-                    {/* Item 5 */}
-                    <div
-                        onClick={() => setSelectedDomain('Finance & Consulting')}
-                        className="flex flex-col items-center text-center cursor-pointer group"
-                    >
-                        <div className="w-28 h-28 rounded-full bg-emerald-50/70 border border-emerald-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-emerald-100/70 transition duration-200">
-                            <DollarSign className="w-12 h-12 text-emerald-600 stroke-[1.5]" />
-                        </div>
-                        <h4 className="text-sm font-semibold text-gray-800 leading-snug px-2 min-h-[2.5rem] flex items-center justify-center">
-                            Finance & Consulting
-                        </h4>
-                        <span className="text-[11px] font-bold text-cyan-500 tracking-wider group-hover:underline mt-1">
-                            CONSULT NOW
-                        </span>
-                    </div>
-
-                    {/* Item 6 */}
-                    <div
-                        onClick={() => setSelectedDomain('Marketing')}
-                        className="flex flex-col items-center text-center cursor-pointer group"
-                    >
-                        <div className="w-28 h-28 rounded-full bg-rose-50/70 border border-rose-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-rose-100/70 transition duration-200">
-                            <Lightbulb className="w-12 h-12 text-rose-600 stroke-[1.5]" />
-                        </div>
-                        <h4 className="text-sm font-semibold text-gray-800 leading-snug px-2 min-h-[2.5rem] flex items-center justify-center">
-                            Marketing & Sales
-                        </h4>
-                        <span className="text-[11px] font-bold text-cyan-500 tracking-wider group-hover:underline mt-1">
-                            CONSULT NOW
-                        </span>
-                    </div>
-                </div>
+                <BookingsSection
+                    bookings={bookings}
+                    loading={bookingsLoading}
+                    error={bookingsError}
+                    isMentor={false}
+                />
             </section>
 
-            {/* SECTION 3: Book an appointment for a 1:1 Consultation */}
+            {/* Specialized Career Guidance Mentors Section */}
             <section className="space-y-4">
                 <div>
                     <h2 className="text-xl font-extrabold text-gray-900 tracking-tight">
-                        Book a 1:1 session for specialized career guidance
+                        Discover specialized career advisors
                     </h2>
                     <p className="text-xs text-gray-500 font-medium mt-0.5">
                         Find experienced career leaders across all fields
                     </p>
                 </div>
 
-                {/* Domain Pills Filter */}
-                <div className="flex items-center space-x-2 overflow-x-auto scrollbar-none py-1">
-                    {allDomains.map((domain) => (
-                        <button
-                            key={domain}
-                            onClick={() => setSelectedDomain(domain)}
-                            className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${selectedDomain === domain
-                                ? 'bg-blue-600 text-white shadow-xs'
-                                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-                                }`}
-                        >
-                            {domain}
-                        </button>
-                    ))}
-                </div>
-
                 {/* Mentors Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-2">
-                    {mentors.map((mentor) => (
-                        <div key={mentor.id} className="bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between">
-                            <div>
-                                <div className="h-48 bg-gray-100 relative overflow-hidden">
-                                    <img
-                                        src={mentor.avatar}
-                                        alt={mentor.name}
-                                        className="w-full h-full object-cover"
-                                    />
-                                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-lg text-xs font-bold text-gray-900 shadow-xs flex items-center">
-                                        <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 mr-1" />
-                                        {mentor.rating}
-                                    </div>
-                                </div>
-                                <div className="p-4 space-y-2">
-                                    <h3 className="font-bold text-base text-gray-900 leading-snug">{mentor.name}</h3>
-                                    <p className="text-xs text-blue-600 font-semibold">{mentor.title} @ {mentor.company}</p>
-                                    <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{mentor.bio}</p>
-
-                                    <div className="flex flex-wrap gap-1 pt-1">
-                                        {mentor.skills.slice(0, 3).map((s, i) => (
-                                            <span key={i} className="text-[10px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">
-                                                {s}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="p-4 pt-0 border-t border-gray-100 mt-2 flex items-center justify-between">
-                                <span className="text-sm font-extrabold text-gray-900">${mentor.rate}<span className="text-[10px] text-gray-500 font-normal">/hr</span></span>
-                                <button
-                                    onClick={() => onBookSession(mentor)}
-                                    className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition shadow-xs"
-                                >
-                                    Book 1:1 Call
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            {/* SECTION 4: Upcoming Booked Sessions Section */}
-            <section className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xs space-y-5">
-                <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                    <div className="flex items-center space-x-3">
-                        <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
-                            <Video className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <div>
-                            <div className="flex items-center space-x-2">
-                                <h2 className="text-lg font-bold text-gray-900">My Booked Sessions</h2>
-                                <span className="flex h-2 w-2 relative">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                                </span>
-                            </div>
-                            <p className="text-xs text-gray-500">Active and upcoming 1:1 career consultations</p>
-                        </div>
+                {mentorsLoading ? (
+                    <div className="flex items-center justify-center py-16">
+                        <Loader2 className="w-8 h-8 text-blue-600 animate-spin mr-2" />
+                        <span className="text-sm text-gray-600 font-semibold">Loading available mentors...</span>
                     </div>
-                    <span className="text-xs font-bold bg-blue-600 text-white px-3 py-1 rounded-full shadow-xs">
-                        {learnerSessions.length} Active {learnerSessions.length === 1 ? 'Call' : 'Calls'}
-                    </span>
-                </div>
-
-                {learnerSessions.length === 0 ? (
-                    <div className="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                        <Clock className="w-9 h-9 text-gray-400 mx-auto mb-2" />
-                        <p className="text-sm font-bold text-gray-700">No upcoming sessions scheduled</p>
-                        <p className="text-xs text-gray-500 mt-1">Browse available mentors above to schedule your first 1:1 consultation.</p>
+                ) : mentorsError ? (
+                    <div className="text-center py-12 bg-red-50 rounded-2xl border border-red-200">
+                        <p className="text-sm font-bold text-red-600">{mentorsError}</p>
+                    </div>
+                ) : mentors.length === 0 ? (
+                    <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                        <p className="text-sm font-bold text-gray-700">No mentors found</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {learnerSessions.map((session) => (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-2">
+                        {mentors.slice(0, 4).map((mentor) => (
                             <div
-                                key={session.id}
-                                className="bg-slate-50/80 border border-gray-200 rounded-2xl p-5 shadow-xs hover:shadow-md transition flex flex-col justify-between"
+                                key={mentor.id}
+                                className="bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between cursor-pointer"
+                                onClick={() => navigate(`/professionals/${mentor.id}`)}
+                                tabIndex={0}
+                                role="button"
                             >
                                 <div>
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex items-center space-x-3.5">
-                                            <div className="relative">
-                                                <img
-                                                    src={session.mentorAvatar}
-                                                    alt={session.mentorName}
-                                                    className="w-13 h-13 rounded-2xl object-cover ring-2 ring-blue-500"
-                                                />
-                                                <span className="absolute -bottom-1 -right-1 bg-emerald-500 border-2 border-white w-3.5 h-3.5 rounded-full" title="Active Booking" />
-                                            </div>
-                                            <div>
-                                                <h4 className="font-extrabold text-base text-black">{session.mentorName}</h4>
-                                                <p className="text-xs text-gray-600 font-medium">{session.mentorTitle} • <strong className="text-black font-semibold">{session.mentorCompany}</strong></p>
-                                            </div>
+                                    <div className="h-48 bg-gray-100 relative overflow-hidden">
+                                        <img
+                                            src={mentor.profile_photo
+                                                || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300"}
+                                            alt={mentor.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-lg text-xs font-bold text-gray-900 shadow-xs flex items-center">
+                                            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 mr-1" />
+                                            {mentor.rating || '5.0'}
                                         </div>
-                                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase tracking-wider">
-                                            {session.status || 'Confirmed'}
-                                        </span>
                                     </div>
+                                    <div className="p-4 space-y-2">
+                                        <h3 className="font-bold text-base text-gray-900 leading-snug">{mentor.name}</h3>
+                                        <p className="text-xs text-blue-600 font-semibold">{mentor.title || mentor.role} @ {mentor.company}</p>
+                                        <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{mentor.bio}</p>
 
-                                    {/* Topic Card */}
-                                    <div className="mt-4 bg-white p-3 rounded-xl border border-gray-200 text-xs text-gray-800">
-                                        <div className="flex items-center space-x-1.5 text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
-                                            <MessageSquare className="w-3 h-3 text-blue-600" />
-                                            <span>Session Agenda</span>
-                                        </div>
-                                        <p className="font-medium line-clamp-2 text-gray-900">{session.topic}</p>
-                                    </div>
-
-                                    {/* Time Tag */}
-                                    <div className="mt-3 flex items-center justify-between text-xs font-semibold text-gray-800 bg-white px-3 py-2 rounded-xl border border-gray-200">
-                                        <div className="flex items-center space-x-2">
-                                            <Calendar className="w-3.5 h-3.5 text-blue-600" />
-                                            <span>{session.date}</span>
-                                        </div>
-                                        <div className="flex items-center space-x-1.5 text-black font-bold">
-                                            <Clock className="w-3.5 h-3.5 text-blue-600" />
-                                            <span>{session.time}</span>
+                                        <div className="flex flex-wrap gap-1 pt-1">
+                                            {(mentor.skills || []).slice(0, 3).map((s, i) => (
+                                                <span key={i} className="text-[10px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md">
+                                                    {s}
+                                                </span>
+                                            ))}
                                         </div>
                                     </div>
                                 </div>
-
-                                <div className="mt-5 pt-3 border-t border-gray-200 flex items-center justify-between">
-                                    <button
-                                        onClick={() => navigator.clipboard.writeText(session.meetingLink)}
-                                        className="text-[11px] font-bold text-gray-600 hover:text-black flex items-center space-x-1 transition"
-                                        title="Copy link"
-                                    >
-                                        <Copy className="w-3.5 h-3.5" />
-                                        <span>Copy Meet Link</span>
-                                    </button>
-                                    <button
-                                        onClick={() => onOpenMeeting(session.meetingLink)}
-                                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs flex items-center space-x-2 transition shadow-xs active:scale-95"
-                                    >
-                                        <Video className="w-3.5 h-3.5" />
-                                        <span>Join Google Meet</span>
-                                        <ExternalLink className="w-3 h-3 text-blue-200" />
-                                    </button>
+                                <div className="p-4 pt-0 border-t border-gray-100 mt-2 flex items-center justify-between">
+                                    <span className="text-sm font-extrabold text-gray-900">${mentor.rate || 100}<span className="text-[10px] text-gray-500 font-normal">/hr</span></span>
+                                    <span className="text-xs font-bold text-blue-600 hover:underline">View Profile &rarr;</span>
                                 </div>
                             </div>
                         ))}
@@ -898,23 +580,140 @@ function LearnerDashboardView({
 }
 
 function MentorDashboardView({
-    mentorBookings,
     mentorSlots,
     setMentorSlots,
-    onAddSlot,
     onToggleSlot,
-    // onDeleteSlot,
     newSlotDate,
     setNewSlotDate,
     newSlotTime,
-    setNewSlotTime,
-    reviews,
-    onViewDetails,
+    setNewSlotTime
 }) {
+    const [bookings, setBookings] = useState([]);
+    const [bookingsLoading, setBookingsLoading] = useState(false);
+    const [bookingsError, setBookingsError] = useState(null);
+
+    const [launchingBookingId, setLaunchingBookingId] = useState(null);
+    const [meetingErrors, setMeetingErrors] = useState({});
+
     const [slotSubmitError, setSlotSubmitError] = useState(null);
     const [slotSuccess, setSlotSuccess] = useState(null);
 
-    // Used for clearing error/success after some time
+    // Initial Dashboard Loading State
+    const [isDashboardLoading, setIsDashboardLoading] = useState(true);
+
+    // Google Calendar State
+    const [isConnectingGoogle, setIsConnectingGoogle] = useState(false);
+    const [googleConnected, setGoogleConnected] = useState(false);
+    const [googleConnectError, setGoogleConnectError] = useState("");
+
+    // Professional info
+    const [professional, setProfessional] = useState(null);
+
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [slotIdToDelete, setSlotIdToDelete] = useState(null);
+
+    // 1. Initial Load: Check Calendar Connection and Load Slots Together
+    useEffect(() => {
+        const initializeDashboard = async () => {
+            setIsDashboardLoading(true);
+            try {
+                const profRes = await axios.get(
+                    `${import.meta.env.VITE_BACKEND_URL}/api/professional/me`,
+                    { withCredentials: true }
+                );
+
+                const profData = profRes.data?.professional || profRes.data;
+                setProfessional(profData);
+
+                const isConnected =
+                    profData?.googleCalendarConnected == 1 ||
+                    profData?.googleCalendarConnected === true;
+
+                setGoogleConnected(isConnected);
+
+                const slotsRes = await axios.get(
+                    `${import.meta.env.VITE_BACKEND_URL}/api/slots/me`,
+                    { withCredentials: true }
+                );
+                setMentorSlots(slotsRes.data?.slots || []);
+            } catch (error) {
+                console.error("Dashboard initialization error:", error);
+                setGoogleConnected(false);
+            } finally {
+                setIsDashboardLoading(false);
+            }
+        };
+
+        initializeDashboard();
+    }, [setMentorSlots]);
+
+    // 2. Fetch Bookings Independently
+    useEffect(() => {
+        const fetchProfessionalBookings = async () => {
+            setBookingsLoading(true);
+            setBookingsError(null);
+            try {
+                const response = await axios.get(
+                    `${import.meta.env.VITE_BACKEND_URL}/api/professional/bookings`,
+                    { withCredentials: true }
+                );
+
+                console.log("mentor bookings:", response);
+                setBookings(response.data?.bookings || []);
+            } catch (err) {
+                setBookingsError("Failed to load bookings. Please try again.");
+            } finally {
+                setBookingsLoading(false);
+            }
+        };
+        fetchProfessionalBookings();
+    }, []);
+
+    // Handles starting the meeting via API call for Professional
+    const handleLaunchMeeting = async (bookingId) => {
+        setLaunchingBookingId(bookingId);
+        setMeetingErrors(prev => ({ ...prev, [bookingId]: null }));
+
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/bookings/${bookingId}/start-meeting`,
+                {},
+                { withCredentials: true }
+            );
+
+            // Extract host_meeting_link returned from backend API call
+            const hostMeetingLink = response.data?.host_meeting_link || response.data?.meetingLink || response.data?.meet_link;
+
+            // Update state with returned host link and started status
+            setBookings(prevBookings =>
+                prevBookings.map(b =>
+                    b.booking_id === bookingId
+                        ? {
+                              ...b,
+                              isLaunched: true,
+                              host_meeting_link: hostMeetingLink || b.host_meeting_link,
+                              meet_link: response.data?.meet_link || b.meet_link,
+                              booking_status: 'meeting_started'
+                          }
+                        : b
+                )
+            );
+
+            // Open host link in browser window for the professional
+            if (hostMeetingLink) {
+                window.open(hostMeetingLink, '_blank');
+            }
+        } catch (error) {
+            console.error("Error launching meeting:", error);
+            const errMsg =
+                error?.response?.data?.message ||
+                "Failed to start the meeting. Please try again.";
+            setMeetingErrors(prev => ({ ...prev, [bookingId]: errMsg }));
+        } finally {
+            setLaunchingBookingId(null);
+        }
+    };
+
     useEffect(() => {
         let timer;
         if (slotSubmitError) {
@@ -927,37 +726,9 @@ function MentorDashboardView({
         };
     }, [slotSubmitError, slotSuccess]);
 
-    // Modal state for slot deletion confirmation
-    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-    const [slotIdToDelete, setSlotIdToDelete] = useState(null);
-
-    // API call to fetch mentor's own slots from /slots/me
-    const fetchMentorSlots = async () => {
-        try {
-            const response = await axios.get(
-                `${import.meta.env.VITE_BACKEND_URL}/api/slots/me`,
-                { withCredentials: true }
-            );
-            console.log("slots:", response)
-            const slots = response.data.slots || [];
-            setMentorSlots(slots);
-        } catch (error) {
-            setSlotSuccess(null);
-            setSlotSubmitError(
-                error?.response?.data?.message ||
-                error?.response?.data?.errors?.[0]?.msg ||
-                "We were unable to fetch your available slots. Please try again shortly, or contact support if the problem persists."
-            );
-        }
-    };
-
-    useEffect(() => {
-        fetchMentorSlots();
-    }, []);
-
     const createSlotAPI = async (e) => {
         e.preventDefault();
-        setSlotSuccess(null); // Ensure only one of error/success is shown
+        setSlotSuccess(null);
         setSlotSubmitError(null);
         try {
             const response = await axios.post(
@@ -968,40 +739,36 @@ function MentorDashboardView({
                 },
                 { withCredentials: true }
             );
-
-            const createdSlot = response.data.slot ||
-            {
-                id: response.data.slot.id,
+            const createdSlot = response.data.slot || {
+                id: response.data.slot?.id,
                 date: newSlotDate,
                 time: newSlotTime,
-                status: response.data.slot.status
+                status: response.data.slot?.status
             };
-
             setMentorSlots([
                 ...mentorSlots,
                 {
                     slot_id: createdSlot.id || `ms-${Date.now()}`,
                     date: createdSlot.date || newSlotDate,
                     start_time: createdSlot.time || newSlotTime,
-                    status: createdSlot.status 
+                    status: createdSlot.status || 'Available'
                 }
             ]);
             setSlotSubmitError(null);
             setSlotSuccess(
                 response.data.message ||
-                "Slot added successfully. Students can now see and book this slot."
+                    "Slot added successfully. Students can now see this slot."
             );
         } catch (error) {
             setSlotSuccess(null);
             const message =
                 error?.response?.data?.message ||
                 error?.response?.data?.errors?.[0]?.msg ||
-                "There was an error while adding your slot. Please try again and ensure your selected time and date are valid.";
+                "There was an error while adding your slot. Please try again.";
             setSlotSubmitError(message);
         }
     };
 
-    // Delete API, called after confirmation
     const confirmDeleteSlot = async () => {
         if (!slotIdToDelete) return;
         setSlotSuccess(null);
@@ -1014,30 +781,27 @@ function MentorDashboardView({
             setMentorSlots(mentorSlots.filter(slot => slot.slot_id !== slotIdToDelete));
             setDeleteModalOpen(false);
             setSlotIdToDelete(null);
-            setSlotSubmitError(null);
             setSlotSuccess(
                 response.data.message ||
-                "Slot deleted successfully. Your availability has been updated."
+                    "Slot deleted successfully. Your availability has been updated."
             );
         } catch (error) {
             setSlotSuccess(null);
             const message =
                 error?.response?.data?.message ||
                 error?.response?.data?.errors?.[0]?.msg ||
-                "Failed to delete this slot; please try again or refresh the page.";
+                "Failed to delete this slot; please try again.";
             setSlotSubmitError(message);
             setDeleteModalOpen(false);
             setSlotIdToDelete(null);
         }
     };
 
-    // Handler for trash button to open modal
     const handleDeleteClick = (slotId) => {
         setSlotIdToDelete(slotId);
         setDeleteModalOpen(true);
     };
 
-    // Handler to close modal without deleting
     const handleCloseModal = () => {
         setDeleteModalOpen(false);
         setSlotIdToDelete(null);
@@ -1045,37 +809,8 @@ function MentorDashboardView({
 
     return (
         <div className="space-y-8">
-            {/* Stats Overview */}
+            {/* Overview Stats */}
             <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {/* ... unchanged ... */}
-                <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                        <div className="p-3 bg-blue-50 text-blue-600 rounded-xl border border-blue-100">
-                            <DollarSign className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <p className="text-xs font-semibold text-gray-500">Monthly Earnings</p>
-                            <h3 className="text-2xl font-extrabold text-black">$3,840</h3>
-                        </div>
-                    </div>
-                    <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full flex items-center space-x-0.5">
-                        <TrendingUp className="w-3 h-3 mr-0.5" /> +12%
-                    </span>
-                </div>
-                <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                        <div className="p-3 bg-black text-blue-600 rounded-xl border border-blue-100">
-                            <Calendar className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <p className="text-xs font-semibold text-gray-500">Booked Sessions</p>
-                            <h3 className="text-2xl font-extrabold text-black">{mentorBookings.length}</h3>
-                        </div>
-                    </div>
-                    <span className="text-[10px] font-bold bg-black text-blue-700 px-2 py-0.5 rounded-full">
-                        Active
-                    </span>
-                </div>
                 <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                         <div className="p-3 bg-amber-50 text-amber-500 rounded-xl border border-amber-100">
@@ -1087,99 +822,71 @@ function MentorDashboardView({
                         </div>
                     </div>
                     <span className="text-[10px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full flex items-center">
-                        ★ 100% Top Tier
+                        ★ Top Tier
+                    </span>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100">
+                            <Calendar className="w-6 h-6 text-emerald-600" />
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold text-gray-500">Total Bookings</p>
+                            <h3 className="text-2xl font-extrabold text-black">{bookings.length}</h3>
+                        </div>
+                    </div>
+                    <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                        Scheduled
+                    </span>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                        <div className="p-3 bg-blue-50 text-blue-600 rounded-xl border border-blue-100">
+                            <Clock className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <p className="text-xs font-semibold text-gray-500">Active Slots</p>
+                            <h3 className="text-2xl font-extrabold text-black">{mentorSlots.length}</h3>
+                        </div>
+                    </div>
+                    <span className="text-[10px] font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                        Configured
                     </span>
                 </div>
             </section>
 
-            {/* Layout Split */}
+            {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* ... unchanged left column ... */}
+                {/* Bookings Column */}
                 <div className="lg:col-span-2 space-y-8">
-                    {/* ... */}
-                    {/* Active Learner Bookings */}
+                    {/* Mentor Upcoming Bookings */}
                     <section className="bg-white rounded-2xl p-6 shadow-xs border border-gray-200 space-y-4">
-                        {/* ... contents unchanged ... */}
                         <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                             <div>
-                                <h2 className="text-lg font-extrabold text-black">Upcoming Learner Consultations</h2>
-                                <p className="text-xs text-gray-500">Confirmed student calls needing your expertise</p>
+                                <h2 className="text-base font-extrabold text-black">Upcoming Learner Consultations</h2>
+                                <p className="text-xs text-gray-500">Scheduled 1:1 sessions with learners</p>
                             </div>
-                            <span className="text-xs font-bold bg-blue-600 text-white px-3 py-1 rounded-full">
-                                {mentorBookings.length} Scheduled
+                            <span className="text-xs font-bold bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full border border-blue-100">
+                                {bookings.length} Active
                             </span>
                         </div>
-                        <div className="space-y-3">
-                            {mentorBookings.map((b) => (
-                                <div key={b.id} className="p-4 bg-slate-50 hover:bg-gray-100/80 rounded-2xl border border-gray-200 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                    <div className="flex items-center space-x-3.5">
-                                        <div className="relative">
-                                            <img src={b.studentAvatar} alt={b.studentName} className="w-11 h-11 rounded-full object-cover ring-2 ring-gray-300" />
-                                            <span className="absolute bottom-0 right-0 bg-emerald-500 w-3 h-3 rounded-full border-2 border-white" />
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center space-x-2">
-                                                <h4 className="font-bold text-sm text-black">{b.studentName}</h4>
-                                                <span className="text-[10px] font-extrabold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-md uppercase">
-                                                    {b.careerInterest}
-                                                </span>
-                                            </div>
-                                            <p className="text-xs text-gray-500 font-medium flex items-center space-x-2 mt-0.5">
-                                                <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                                                <span>{b.date} at {b.time}</span>
-                                                <span>•</span>
-                                                <span className="font-bold text-black">${b.amount} Payout</span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center space-x-2 self-end sm:self-center">
-                                        <button onClick={() => onViewDetails(b)} className="px-3.5 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 transition shadow-2xs">
-                                            Details
-                                        </button>
-                                        <button onClick={() => window.open(b.meetingLink, '_blank')} className="px-3.5 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 hover:bg-blue-700 transition shadow-xs">
-                                            <Video className="w-3.5 h-3.5" />
-                                            <span>Launch Call</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                    {/* Student Feedback & Reviews */}
-                    <section className="bg-white rounded-2xl p-6 shadow-xs border border-gray-200 space-y-4">
-                        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                            <div>
-                                <h2 className="text-base font-extrabold text-black">Recent Student Reviews</h2>
-                                <p className="text-xs text-gray-500">Feedback from completed mentorship sessions</p>
-                            </div>
-                            <Award className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {reviews.map((rev) => (
-                                <div key={rev.id} className="p-4 bg-gray-50 rounded-2xl border border-gray-200 flex flex-col justify-between space-y-3">
-                                    <p className="text-xs text-gray-700 italic leading-relaxed">"{rev.comment}"</p>
-                                    <div className="flex items-center justify-between pt-2 border-t border-gray-200/60">
-                                        <div className="flex items-center space-x-2">
-                                            <img src={rev.studentAvatar} alt={rev.studentName} className="w-7 h-7 rounded-full object-cover" />
-                                            <div>
-                                                <p className="text-xs font-bold text-black leading-none">{rev.studentName}</p>
-                                                <span className="text-[10px] text-gray-400">{rev.date}</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex text-amber-500">
-                                            {[...Array(rev.rating)].map((_, i) => (
-                                                <Star key={i} className="w-3 h-3 fill-amber-500" />
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+
+                        <BookingsSection
+                            bookings={bookings}
+                            loading={bookingsLoading}
+                            error={bookingsError}
+                            isMentor={true}
+                            onLaunchMeeting={handleLaunchMeeting}
+                            launchingBookingId={launchingBookingId}
+                            meetingErrors={meetingErrors}
+                        />
                     </section>
                 </div>
-                {/* Right: Slot Management */}
+
+                {/* Slot Management Column */}
                 <section className="bg-white rounded-2xl p-6 shadow-xs border border-gray-200 space-y-5 h-fit">
-                    {/* ...unchanged until the slots list... */}
                     <div className="flex items-center justify-between border-b border-gray-200 pb-3">
                         <div className="flex items-center space-x-2">
                             <div className="p-2 bg-blue-600 text-white rounded-xl">
@@ -1194,145 +901,156 @@ function MentorDashboardView({
                             {mentorSlots.length} Slots
                         </span>
                     </div>
-                    {/* Add Slot Form */}
-                    <form
-                        onSubmit={createSlotAPI}
-                        className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200"
-                    >
-                        <p className="text-xs font-bold uppercase tracking-wider text-gray-700">Add New Slot</p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Date Picker */}
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-2">
-                                    <span className="flex items-center space-x-1">
-                                        <Calendar className="inline w-3.5 h-3.5 text-blue-600" />
-                                        <span>Select Date</span>
-                                    </span>
-                                </label>
-                                <input
-                                    type="date"
-                                    required
-                                    value={newSlotDate}
-                                    onChange={(e) => setNewSlotDate(e.target.value)}
-                                    className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-600 outline-none transition text-black shadow-sm placeholder:text-gray-400"
-                                />
-                            </div>
-                            {/* Time Picker */}
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-2">
-                                    <span className="flex items-center space-x-1">
-                                        <Clock className="inline w-3.5 h-3.5 text-blue-600" />
-                                        <span>Select Time Slot</span>
-                                    </span>
-                                </label>
-                                <select
-                                    value={newSlotTime}
-                                    onChange={(e) => setNewSlotTime(e.target.value)}
-                                    className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-600 outline-none transition text-black shadow-sm cursor-pointer"
-                                >
-                                    <option disabled value="">Choose a time...</option>
-                                    <option value="00:00:00">00:00</option>
-                                    <option value="01:00:00">01:00</option>
-                                    <option value="02:00:00">02:00</option>
-                                    <option value="03:00:00">03:00</option>
-                                    <option value="04:00:00">04:00</option>
-                                    <option value="05:00:00">05:00</option>
-                                    <option value="06:00:00">06:00</option>
-                                    <option value="07:00:00">07:00</option>
-                                    <option value="08:00:00">08:00</option>
-                                    <option value="09:00:00">09:00</option>
-                                    <option value="10:00:00">10:00</option>
-                                    <option value="11:00:00">11:00</option>
-                                    <option value="12:00:00">12:00</option>
-                                    <option value="13:00:00">13:00</option>
-                                    <option value="14:00:00">14:00</option>
-                                    <option value="16:00:00">16:00</option>
-                                    <option value="17:00:00">17:00</option>
-                                    <option value="18:00:00">18:00</option>
-                                    <option value="19:00:00">19:00</option>
-                                    <option value="20:00:00">20:00</option>
-                                    <option value="21:00:00">21:00</option>
-                                    <option value="22:00:00">22:00</option>
-                                    <option value="23:00:00">23:00</option>
-                                </select>
-                            </div>
+
+                    {isDashboardLoading ? (
+                        <div className="flex items-center justify-center py-10 bg-gray-50 rounded-xl border border-gray-200">
+                            <Loader2 className="w-6 h-6 text-blue-600 animate-spin mr-2" />
+                            <span className="text-xs font-semibold text-gray-600">Checking availability status...</span>
                         </div>
-                  
-                        <div className="flex items-center space-x-2 mb-2">
-                            {slotSubmitError && (
-                                <span className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-lg px-3 py-2 w-full block">
-                                    {slotSubmitError}
-                                </span>
-                            )}
-                            {!slotSubmitError && slotSuccess && (
-                                <span className="text-xs text-green-600 bg-green-50 border border-green-200 rounded-lg px-3 py-2 w-full block">
-                                    {slotSuccess}
-                                </span>
-                            )}
-                        </div>
-                        <button
-                            type="submit"
-                            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition shadow-xs"
-                        >
-                            <Plus className="w-4 h-4" />
-                            <span>Add Available Slot</span>
-                        </button>
-                    </form>
-                    {/* Slots List (Scrollable Container with Max Height) */}
-                    <div className="space-y-2.5">
-                        <div className="flex items-center justify-between">
-                            <p className="text-xs font-bold uppercase tracking-wider text-gray-700">Current Schedule</p>
-                            {mentorSlots.length > 3 && (
-                                <span className="text-[10px] text-gray-400 font-medium">Scroll for more</span>
-                            )}
-                        </div>
-                        {mentorSlots.length === 0 ? (
-                            <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-300 text-gray-500 text-xs">
-                                No availability slots configured
-                            </div>
-                        ) : (
-                            <div className="max-h-[260px] overflow-y-auto space-y-2.5 pr-1 transition-all">
-                                {mentorSlots.map((slot) => (
-                                    <div
-                                        key={slot.slot_id}
-                                        className="flex justify-between items-center p-3.5 border border-gray-200 rounded-xl text-xs bg-white hover:border-blue-500 transition shadow-2xs"
-                                    >
-                                        <div className="space-y-0.5">
-                                            <div className="flex items-center space-x-2">
-                                                <Calendar className="w-3.5 h-3.5 text-blue-600" />
-                                                <span className="font-bold text-black">{slot.date}</span>
-                                            </div>
-                                            <div className="flex items-center space-x-2">
-                                                <Clock className="w-3.5 h-3.5 text-gray-400" />
-                                                <span className="text-gray-700 font-medium">{slot.start_time}</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => onToggleSlot(slot.slot_id)}
-                                                className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition ${slot.status
-                                                    ? 'bg-green-700 text-white border-blue-600'
-                                                    : 'bg-gray-300 text-white border-gray-200'
-                                                    }`}
-                                            >
-                                                {slot.status ? 'Available' : 'Booked'}
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDeleteClick(slot.slot_id)}
-                                                className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg transition"
-                                                title="Delete Slot"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
+                    ) : (
+                        <>
+                            {/* Add Slot Form */}
+                            <form
+                                onSubmit={createSlotAPI}
+                                className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200"
+                            >
+                                <p className="text-xs font-bold uppercase tracking-wider text-gray-700">Add New Slot</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-700 mb-2">
+                                            <span className="flex items-center space-x-1">
+                                                <Calendar className="inline w-3.5 h-3.5 text-blue-600" />
+                                                <span>Select Date</span>
+                                            </span>
+                                        </label>
+                                        <input
+                                            type="date"
+                                            required
+                                            value={newSlotDate}
+                                            onChange={(e) => setNewSlotDate(e.target.value)}
+                                            className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-600 outline-none transition text-black shadow-sm"
+                                        />
                                     </div>
-                                ))}
+
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-700 mb-2">
+                                            <span className="flex items-center space-x-1">
+                                                <Clock className="inline w-3.5 h-3.5 text-blue-600" />
+                                                <span>Select Time Slot</span>
+                                            </span>
+                                        </label>
+                                        <select
+                                            value={newSlotTime}
+                                            onChange={(e) => setNewSlotTime(e.target.value)}
+                                            className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-600 outline-none transition text-black shadow-sm cursor-pointer"
+                                        >
+                                            <option disabled value="">Choose a time...</option>
+                                            <option value="01:00:00">01:00</option>
+                                            <option value="02:00:00">02:00</option>
+                                            <option value="03:00:00">03:00</option>
+                                            <option value="04:00:00">04:00</option>
+                                            <option value="05:00:00">05:00</option>
+                                            <option value="06:00:00">06:00</option>
+                                            <option value="07:00:00">07:00</option>
+                                            <option value="08:00:00">08:00</option>
+                                            <option value="09:00:00">09:00</option>
+                                            <option value="10:00:00">10:00</option>
+                                            <option value="11:00:00">11:00</option>
+                                            <option value="12:00:00">12:00</option>
+                                            <option value="13:00:00">13:00</option>
+                                            <option value="14:00:00">14:00</option>
+                                            <option value="16:00:00">16:00</option>
+                                            <option value="17:00:00">17:00</option>
+                                            <option value="18:00:00">18:00</option>
+                                            <option value="19:00:00">19:00</option>
+                                            <option value="20:00:00">20:00</option>
+                                            <option value="21:00:00">21:00</option>
+                                            <option value="22:00:00">22:00</option>
+                                            <option value="23:00:00">23:00</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center space-x-2 mb-2">
+                                    {slotSubmitError && (
+                                        <span className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-lg px-3 py-2 w-full block">
+                                            {slotSubmitError}
+                                        </span>
+                                    )}
+                                    {!slotSubmitError && slotSuccess && (
+                                        <span className="text-xs text-green-600 bg-green-50 border border-green-200 rounded-lg px-3 py-2 w-full block">
+                                            {slotSuccess}
+                                        </span>
+                                    )}
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition shadow-xs"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    <span>Add Available Slot</span>
+                                </button>
+                            </form>
+
+                            {/* Slots List */}
+                            <div className="space-y-2.5">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs font-bold uppercase tracking-wider text-gray-700">Current Schedule</p>
+                                    {mentorSlots.length > 3 && (
+                                        <span className="text-[10px] text-gray-400 font-medium">Scroll for more</span>
+                                    )}
+                                </div>
+                                {mentorSlots.length === 0 ? (
+                                    <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-300 text-gray-500 text-xs">
+                                        No availability slots configured
+                                    </div>
+                                ) : (
+                                    <div className="max-h-[260px] overflow-y-auto space-y-2.5 pr-1 transition-all">
+                                        {mentorSlots.map((slot) => (
+                                            <div
+                                                key={slot.slot_id}
+                                                className="flex justify-between items-center p-3.5 border border-gray-200 rounded-xl text-xs bg-white hover:border-blue-500 transition shadow-2xs"
+                                            >
+                                                <div className="space-y-0.5">
+                                                    <div className="flex items-center space-x-2">
+                                                        <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                                                        <span className="font-bold text-black">{slot.date}</span>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                                                        <span className="text-gray-700 font-medium">{slot.start_time}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <span
+                                                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition ${
+                                                            slot.status?.toLowerCase() === 'available'
+                                                                ? 'bg-green-100 text-green-800 border-green-300'
+                                                                : slot.status?.toLowerCase() === 'booked'
+                                                                ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
+                                                                : 'bg-gray-200 text-red-600 border-gray-300'
+                                                        }`}
+                                                    >
+                                                        {slot.status}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeleteClick(slot.slot_id)}
+                                                        className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg transition"
+                                                        title="Delete Slot"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
-                    {/* Simple Delete Confirmation Modal */}
+                        </>
+                    )}
+
+                    {/* Delete Confirmation Modal */}
                     {deleteModalOpen && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[2px] transition-all">
                             <div className="bg-white rounded-xl shadow-xl p-5 sm:p-6 md:p-7 max-w-[96vw] w-full max-w-xs sm:max-w-sm md:max-w-xs border border-gray-100 transition-all">

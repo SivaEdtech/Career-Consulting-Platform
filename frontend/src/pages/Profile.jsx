@@ -165,15 +165,6 @@ export default function Profile() {
               </p>
             </div>
 
-            {/* Bio (again if desired; already in header) */}
-            {/* Can remove this block, bio already shown above - keeping for visibility, but it can easily be omitted */}
-            {/* <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm flex flex-col gap-2">
-              <div className="flex items-center space-x-2 text-gray-700 font-semibold text-sm">
-                <BookOpen className="w-4 h-4" />
-                <span>Bio</span>
-              </div>
-              <p className="text-sm text-gray-800">{profile?.bio || 'No biography available.'}</p>
-            </div> */}
           </div>
 
           {/* Available Slots Section */}

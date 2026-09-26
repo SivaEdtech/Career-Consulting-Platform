@@ -10,5 +10,8 @@ export const env = {
   googleClientId : process.env.GOOGLE_CLIENT_ID,
   googleClientSecret : process.env.GOOGLE_CLIENT_SECRET,
   jwt_secret : process.env.JWT_SECRET,
-  frontend_url : process.env.FRONTEND_URL
+  frontend_url : process.env.FRONTEND_URL,
+  googleRedirectUri:process.env.GOOGLE_REDIRECT_URI,
+  googleRefreshToken:process.env.GOOGLE_REFRESH_TOKEN,
+  whereby: process.env.WHEREBY
 };
