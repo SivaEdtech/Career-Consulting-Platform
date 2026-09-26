@@ -12,5 +12,6 @@ export const env = {
   jwt_secret : process.env.JWT_SECRET,
   frontend_url : process.env.FRONTEND_URL,
   googleRedirectUri:process.env.GOOGLE_REDIRECT_URI,
-  googleRefreshToken:process.env.GOOGLE_REFRESH_TOKEN
+  googleRefreshToken:process.env.GOOGLE_REFRESH_TOKEN,
+  whereby: process.env.WHEREBY
 };

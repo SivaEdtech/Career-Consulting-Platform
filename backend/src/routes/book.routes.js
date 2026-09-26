@@ -14,4 +14,5 @@ router.get("/professional/bookings", authUser, getProfessionalBookings);
 
 
 
+
 export default router;

@@ -5,7 +5,7 @@ import learnerRoutes from "./src/routes/learner.route.js"
 import slotRoutes from "./src/routes/slot.route.js"
 import bookRoutes from "./src/routes/book.routes.js"
 import cookieParser from "cookie-parser";
-import googleCalendarRoutes from "./src/routes/googleCalendar.routes.js"
+// import googleCalendarRoutes from "./src/routes/googleCalendar.routes.js"
 
 import cors from "cors";
 import {env} from "./src/config/env.js"
@@ -27,7 +27,7 @@ app.use("/api",learnerRoutes)
 app.use("/api", proffesionalRoutes)
 app.use("/api",slotRoutes)
 app.use("/api",bookRoutes)
-app.use("/api",googleCalendarRoutes)
+// app.use("/api",googleCalendarRoutes)
 
 
 export default app;

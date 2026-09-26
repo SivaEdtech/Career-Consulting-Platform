@@ -1,65 +1,71 @@
-import { google } from "googleapis";
-import oauth2Client from "../config/googleCalendar.js";
+// import { google } from "googleapis";
+// import oauth2Client from "../config/googleCalendar.js";
 
-export const createGoogleMeet = async (date, startTime) => {
-  const calendar = google.calendar({
-    version: "v3",
-    auth: oauth2Client,
-  });
+// export const createGoogleMeet = async (refreshToken, date, startTime) => {
 
-  const datePart = new Date(date).toISOString().split("T")[0];
 
-  const startDateTime = new Date(
-    `${datePart}T${startTime}`
-  );
+//   oauth2Client.setCredentials({
+//     refresh_token: refreshToken,
+//   });
 
-  const endDateTime = new Date(
-    startDateTime.getTime() + 60 * 60 * 1000
-  );
+//   const calendar = google.calendar({
+//     version: "v3",
+//     auth: oauth2Client,
+//   });
 
-  console.log("Start:", startDateTime);
-  console.log("End:", endDateTime);
+//   const datePart = new Date(date).toISOString().split("T")[0];
 
-  const event = await calendar.events.insert({
-    calendarId: "primary",
-    conferenceDataVersion: 1,
+//   const startDateTime = new Date(
+//     `${datePart}T${startTime}`
+//   );
 
-    requestBody: {
-      summary: "Career Consultation",
+//   const endDateTime = new Date(
+//     startDateTime.getTime() + 60 * 60 * 1000
+//   );
 
-      start: {
-        dateTime: startDateTime.toISOString(),
-        timeZone: "Asia/Kolkata",
-      },
+//   console.log("Start:", startDateTime);
+//   console.log("End:", endDateTime);
 
-      end: {
-        dateTime: endDateTime.toISOString(),
-        timeZone: "Asia/Kolkata",
-      },
+//   const event = await calendar.events.insert({
+//     calendarId: "primary",
+//     conferenceDataVersion: 1,
 
-      conferenceData: {
-        createRequest: {
-          requestId: `booking-${Date.now()}`,
+//     requestBody: {
+//       summary: "Career Consultation",
 
-          conferenceSolutionKey: {
-            type: "hangoutsMeet",
-          },
-        },
-      },
-    },
-  });
+//       start: {
+//         dateTime: startDateTime.toISOString(),
+//         timeZone: "Asia/Kolkata",
+//       },
 
-  const meetingLink =
-    event.data.conferenceData?.entryPoints?.find(
-      (entry) => entry.entryPointType === "video"
-    )?.uri;
+//       end: {
+//         dateTime: endDateTime.toISOString(),
+//         timeZone: "Asia/Kolkata",
+//       },
 
-  if (!meetingLink) {
-    throw new Error("Google Meet link was not generated");
-  }
+//       conferenceData: {
+//         createRequest: {
+//           requestId: `booking-${Date.now()}`,
 
-  return {
-    meetingLink,
-    eventId: event.data.id,
-  };
-};
+//           conferenceSolutionKey: {
+//             type: "hangoutsMeet",
+//           },
+//         },
+//       },
+//     },
+//   });
+
+//   const meetingLink =
+//     event.data.conferenceData?.entryPoints?.find(
+//       (entry) => entry.entryPointType === "video"
+//     )?.uri;
+
+//   if (!meetingLink) {
+//     throw new Error("Google Meet link was not generated");
+//   }
+
+//   return {
+//     meetingLink,
+//     eventId: event.data.id,
+//   };
+// };

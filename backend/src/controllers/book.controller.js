@@ -1,5 +1,5 @@
 import pool from "../config/mysql.js";
-import {createGoogleMeet} from "../services/googleCalendar.service.js"
+// import {createGoogleMeet} from "../services/googleCalendar.service.js"
 
 const createBooking = async (req, res) => {
   try {
@@ -51,15 +51,15 @@ const createBooking = async (req, res) => {
     const learner_id = learnerResult[0].id;
 
 
-    const { meetingLink } = await createGoogleMeet(
-      date,
-      startTime
-    );
+    // const { meetingLink } = await createGoogleMeet(
+    //   date,
+    //   startTime
+    // );
 
     // Insert the booking into the booking table
     const [result] = await pool.query(
-      "INSERT INTO bookings (professional_id, learner_id, slot_id, meet_link ) VALUES (?, ?, ?, ?)",
-      [professional_id , learner_id, slot_id, meetingLink]
+      "INSERT INTO bookings (professional_id, learner_id, slot_id ) VALUES (?, ?, ?)",
+      [professional_id , learner_id, slot_id]
     );
 
     await pool.query(
@@ -262,6 +262,7 @@ const getLearnerBookings = async (req, res) => {
           b.booking_status,
           b.created_at,
           b.meet_link,
+          b.meeting_started,
 
           p.id AS professional_id,
           p.name AS professional_name,
@@ -319,6 +320,8 @@ const getProfessionalBookings = async (req, res) => {
           b.booking_status,
           b.created_at,
           b.meet_link,
+          b.host_meeting_link,
+          b.meeting_started,
 
           l.id AS learner_id,
           l.name AS learner_name,

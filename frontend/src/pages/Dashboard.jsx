@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from "../api/axios";
 import { useAuth } from "../context/AuthContext";
@@ -8,7 +8,6 @@ import {
     Star,
     Calendar,
     Clock,
-    Search,
     Plus,
     Trash2,
     Award,
@@ -24,27 +23,11 @@ import {
     CheckCircle2,
     GraduationCap,
     MessageSquare,
-    PlayCircle
+    PlayCircle,
+    ExternalLink,
+    Copy,
+    Check
 } from 'lucide-react';
-
-const INITIAL_REVIEWS = [
-    {
-        id: 'r1',
-        studentName: 'Sarah Jenkins',
-        studentAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150',
-        rating: 5,
-        date: '2 days ago',
-        comment: 'Elena provided incredible insights into LLM fine-tuning and gave concrete actionable feedback on my portfolio.'
-    },
-    {
-        id: 'r2',
-        studentName: 'Devon Miller',
-        studentAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150',
-        rating: 5,
-        date: '1 week ago',
-        comment: 'Clear, concise, and deeply practical career mentorship. Unlocked my confidence for upcoming top-tier interviews!'
-    }
-];
 
 export default function Dashboard() {
     const { user, loading } = useAuth();
@@ -58,12 +41,6 @@ export default function Dashboard() {
     const [mentors, setMentors] = useState([]);
     const [mentorsLoading, setMentorsLoading] = useState(false);
     const [mentorsError, setMentorsError] = useState(null);
-
-    const [reviews] = useState(INITIAL_REVIEWS);
-
-    // Search & Filter State
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedDomain, setSelectedDomain] = useState('All');
 
     // Mentor Slot Management State
     const [mentorSlots, setMentorSlots] = useState([]);
@@ -95,25 +72,6 @@ export default function Dashboard() {
 
         fetchMentors();
     }, [isLearner]);
-
-    // Filter Mentors
-    const filteredMentors = useMemo(() => {
-        return mentors.filter(m => {
-            const domain = m.domain || m.specialty || '';
-            const name = m.name || '';
-            const title = m.title || m.role || '';
-            const company = m.company || '';
-            const skills = m.skills || [];
-
-            const matchesDomain = selectedDomain === 'All' || domain.toLowerCase() === selectedDomain.toLowerCase();
-            const matchesSearch =
-                name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                skills.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
-            return matchesDomain && matchesSearch;
-        });
-    }, [mentors, selectedDomain, searchQuery]);
 
     const toggleSlotStatus = (id) => {
         setMentorSlots(mentorSlots.map(s => s.id === id ? { ...s, active: !s.active } : s));
@@ -174,20 +132,6 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* Search Bar in Header for Learner */}
-                    {isLearner && (
-                        <div className="hidden md:flex flex-1 max-w-md mx-8 relative">
-                            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search domain, role, or mentor..."
-                                className="w-full pl-10 pr-4 py-2 text-xs border border-gray-200 rounded-full focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50/80 text-black placeholder-gray-400 transition"
-                            />
-                        </div>
-                    )}
-
                     {/* Right User Actions */}
                     <div className="flex items-center space-x-4">
                         <button className="relative p-2 text-gray-600 hover:text-black rounded-xl hover:bg-gray-100 transition">
@@ -228,14 +172,9 @@ export default function Dashboard() {
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-10">
                 {isLearner ? (
                     <LearnerDashboardView
-                        mentors={filteredMentors}
+                        mentors={mentors}
                         mentorsLoading={mentorsLoading}
                         mentorsError={mentorsError}
-                        allDomains={['All', 'Engineering', 'AI & Data Science', 'Product & Business', 'Design & Creative', 'Finance & Consulting', 'Marketing']}
-                        selectedDomain={selectedDomain}
-                        setSelectedDomain={setSelectedDomain}
-                        searchQuery={searchQuery}
-                        setSearchQuery={setSearchQuery}
                     />
                 ) : isMentorOrProfessional ? (
                     <MentorDashboardView
@@ -246,7 +185,6 @@ export default function Dashboard() {
                         setNewSlotDate={setNewSlotDate}
                         newSlotTime={newSlotTime}
                         setNewSlotTime={setNewSlotTime}
-                        reviews={reviews}
                     />
                 ) : (
                     <div className="py-10 text-center text-gray-500">No dashboard available for your role.</div>
@@ -269,8 +207,10 @@ export default function Dashboard() {
     );
 }
 
-{/* Helper component for rendering individual booking cards */}
-function BookingsSection({ bookings, loading, error, isMentor = false, onLaunchMeeting }) {
+// Helper component for rendering individual booking cards
+function BookingsSection({ bookings, loading, error, isMentor = false, onLaunchMeeting, launchingBookingId, meetingErrors }) {
+    const [copiedBookingId, setCopiedBookingId] = useState(null);
+
     if (loading) {
         return (
             <div className="flex items-center justify-center py-10 bg-white rounded-2xl border border-gray-200">
@@ -315,6 +255,12 @@ function BookingsSection({ bookings, loading, error, isMentor = false, onLaunchM
         return `${formattedHours}:${minutes} ${ampm}`;
     };
 
+    const handleCopy = (bookingId, link) => {
+        navigator.clipboard.writeText(link);
+        setCopiedBookingId(bookingId);
+        setTimeout(() => setCopiedBookingId(null), 2000);
+    };
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {bookings.map((booking) => {
@@ -325,8 +271,15 @@ function BookingsSection({ bookings, loading, error, isMentor = false, onLaunchM
                     : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150";
                 
                 const bio = isMentor ? booking.learner_bio : booking.professional_bio;
-                const meetLink = booking.meet_link;
-                const isLaunched = booking.isLaunched || false;
+                
+                // Host link for professional; meet_link for learner
+                const hostLink = booking.host_meeting_link || booking.meet_link || booking.meetingLink;
+                const learnerLink = booking.meet_link || booking.meetingLink;
+                const activeLink = isMentor ? hostLink : learnerLink;
+
+                const isLaunched = booking.isLaunched || booking.booking_status === 'meeting_started' || Boolean(activeLink);
+                const isLaunching = launchingBookingId === booking.booking_id;
+                const bookingErr = meetingErrors?.[booking.booking_id];
 
                 return (
                     <div
@@ -339,12 +292,14 @@ function BookingsSection({ bookings, loading, error, isMentor = false, onLaunchM
                                 Booking #{booking.booking_id}
                             </span>
                             <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold capitalize flex items-center gap-1 ${
-                                booking.booking_status === 'confirmed'
+                                isLaunched
                                     ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                    : booking.booking_status === 'confirmed'
+                                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
                                     : 'bg-amber-50 text-amber-700 border border-amber-200'
                             }`}>
                                 <CheckCircle2 className="w-3 h-3" />
-                                {booking.booking_status}
+                                {isLaunched ? 'Meeting Started' : booking.booking_status}
                             </span>
                         </div>
 
@@ -387,41 +342,91 @@ function BookingsSection({ bookings, loading, error, isMentor = false, onLaunchM
                             </div>
                         </div>
 
+                        {/* Meeting Link Callout (If Available) */}
+                        {activeLink && (
+                            <div className="bg-blue-50/70 border border-blue-100 rounded-xl p-3 text-xs space-y-1.5 transition-all">
+                                <div className="flex items-center justify-between text-blue-900 font-bold">
+                                    <span className="flex items-center gap-1.5">
+                                        <Video className="w-3.5 h-3.5 text-blue-600" />
+                                        {isMentor ? 'Host Meeting Link' : 'Learner Meeting Link'}
+                                    </span>
+                                    <button
+                                        onClick={() => handleCopy(booking.booking_id, activeLink)}
+                                        className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 focus:outline-none"
+                                    >
+                                        {copiedBookingId === booking.booking_id ? (
+                                            <>
+                                                <Check className="w-3 h-3 text-emerald-600" />
+                                                <span className="text-emerald-600">Copied!</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Copy className="w-3 h-3" />
+                                                <span>Copy Link</span>
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                                <div className="bg-white/80 border border-blue-100 rounded-lg p-2 text-[11px] font-mono text-gray-700 truncate select-all">
+                                    {activeLink}
+                                </div>
+                            </div>
+                        )}
+
+                        {bookingErr && (
+                            <p className="text-[11px] text-red-600 font-medium bg-red-50 p-2 rounded-lg border border-red-100">
+                                {bookingErr}
+                            </p>
+                        )}
+
                         {/* Action Buttons */}
                         <div className="flex items-center space-x-2 pt-1">
                             {isMentor ? (
                                 <button
+                                    disabled={isLaunching}
                                     className={`flex-1 py-2 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition shadow-xs ${
-                                        isLaunched
+                                        isLaunching
+                                            ? 'bg-blue-400 cursor-not-allowed'
+                                            : isLaunched
                                             ? 'bg-emerald-600 hover:bg-emerald-700'
                                             : 'bg-blue-600 hover:bg-blue-700'
                                     }`}
                                     onClick={() => {
-                                        if (onLaunchMeeting) onLaunchMeeting(booking.booking_id);
-                                        if (meetLink) {
-                                            window.open(meetLink, '_blank');
+                                        if (isLaunched && activeLink) {
+                                            window.open(activeLink, '_blank');
+                                        } else if (onLaunchMeeting) {
+                                            onLaunchMeeting(booking.booking_id);
                                         }
                                     }}
                                 >
-                                    <PlayCircle className="w-3.5 h-3.5" />
-                                    <span>{isLaunched ? 'Meeting Launched (Rejoin)' : 'Launch Meeting'}</span>
+                                    {isLaunching ? (
+                                        <>
+                                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            <span>Launching Meeting...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            {isLaunched ? <ExternalLink className="w-3.5 h-3.5" /> : <PlayCircle className="w-3.5 h-3.5" />}
+                                            <span>{isLaunched ? 'Open Host Room' : 'Launch Meeting'}</span>
+                                        </>
+                                    )}
                                 </button>
                             ) : (
                                 <button
-                                    disabled={!isLaunched}
+                                    disabled={!isLaunched || !activeLink}
                                     className={`flex-1 py-2 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition shadow-xs ${
-                                        isLaunched
+                                        isLaunched && activeLink
                                             ? 'bg-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-emerald-200'
                                             : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-70'
                                     }`}
                                     onClick={() => {
-                                        if (isLaunched && meetLink) {
-                                            window.open(meetLink, '_blank');
+                                        if (isLaunched && activeLink) {
+                                            window.open(activeLink, '_blank');
                                         }
                                     }}
                                 >
                                     <Video className="w-3.5 h-3.5" />
-                                    <span>{isLaunched ? 'Join Meeting' : 'Waiting for Mentor'}</span>
+                                    <span>{isLaunched && activeLink ? 'Join Meeting' : 'Waiting for Mentor'}</span>
                                 </button>
                             )}
 
@@ -443,10 +448,7 @@ function BookingsSection({ bookings, loading, error, isMentor = false, onLaunchM
 function LearnerDashboardView({
     mentors,
     mentorsLoading,
-    mentorsError,
-    allDomains,
-    selectedDomain,
-    setSelectedDomain
+    mentorsError
 }) {
     const navigate = useNavigate();
 
@@ -502,118 +504,6 @@ function LearnerDashboardView({
                 />
             </section>
 
-            {/* Consult Top Mentors Online For Any Career Concern */}
-            <section className="space-y-8 py-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
-                            Consult top experts online for any career concern
-                        </h2>
-                        <p className="text-sm text-gray-500 font-medium mt-1">
-                            Private online consultations with verified professionals across all specialties
-                        </p>
-                    </div>
-                    <button
-                        onClick={() => setSelectedDomain('All')}
-                        className="text-xs font-semibold text-cyan-600 border border-cyan-400 hover:bg-cyan-50/50 px-4 py-2.5 rounded-md transition-colors self-start sm:self-auto bg-transparent"
-                    >
-                        View All Specialties
-                    </button>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-8">
-                    <div
-                        onClick={() => setSelectedDomain('Engineering')}
-                        className="flex flex-col items-center text-center cursor-pointer group"
-                    >
-                        <div className="w-28 h-28 rounded-full bg-blue-50/70 border border-blue-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-blue-100/70 transition duration-200">
-                            <Layers className="w-12 h-12 text-blue-600 stroke-[1.5]" />
-                        </div>
-                        <h4 className="text-sm font-semibold text-gray-800 leading-snug px-2 min-h-[2.5rem] flex items-center justify-center">
-                            Engineering & Software
-                        </h4>
-                        <span className="text-[11px] font-bold text-cyan-500 tracking-wider group-hover:underline mt-1">
-                            EXPLORE NOW
-                        </span>
-                    </div>
-
-                    <div
-                        onClick={() => setSelectedDomain('AI & Data Science')}
-                        className="flex flex-col items-center text-center cursor-pointer group"
-                    >
-                        <div className="w-28 h-28 rounded-full bg-teal-50/70 border border-teal-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-teal-100/70 transition duration-200">
-                            <Sparkles className="w-12 h-12 text-teal-600 stroke-[1.5]" />
-                        </div>
-                        <h4 className="text-sm font-semibold text-gray-800 leading-snug px-2 min-h-[2.5rem] flex items-center justify-center">
-                            AI & Data Science
-                        </h4>
-                        <span className="text-[11px] font-bold text-cyan-500 tracking-wider group-hover:underline mt-1">
-                            EXPLORE NOW
-                        </span>
-                    </div>
-
-                    <div
-                        onClick={() => setSelectedDomain('Product & Business')}
-                        className="flex flex-col items-center text-center cursor-pointer group"
-                    >
-                        <div className="w-28 h-28 rounded-full bg-amber-50/70 border border-amber-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-amber-100/70 transition duration-200">
-                            <Briefcase className="w-12 h-12 text-amber-600 stroke-[1.5]" />
-                        </div>
-                        <h4 className="text-sm font-semibold text-gray-800 leading-snug px-2 min-h-[2.5rem] flex items-center justify-center">
-                            Product & Management
-                        </h4>
-                        <span className="text-[11px] font-bold text-cyan-500 tracking-wider group-hover:underline mt-1">
-                            EXPLORE NOW
-                        </span>
-                    </div>
-
-                    <div
-                        onClick={() => setSelectedDomain('Design & Creative')}
-                        className="flex flex-col items-center text-center cursor-pointer group"
-                    >
-                        <div className="w-28 h-28 rounded-full bg-purple-50/70 border border-purple-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-purple-100/70 transition duration-200">
-                            <Compass className="w-12 h-12 text-purple-600 stroke-[1.5]" />
-                        </div>
-                        <h4 className="text-sm font-semibold text-gray-800 leading-snug px-2 min-h-[2.5rem] flex items-center justify-center">
-                            Design & Creative Art
-                        </h4>
-                        <span className="text-[11px] font-bold text-cyan-500 tracking-wider group-hover:underline mt-1">
-                            EXPLORE NOW
-                        </span>
-                    </div>
-
-                    <div
-                        onClick={() => setSelectedDomain('Finance & Consulting')}
-                        className="flex flex-col items-center text-center cursor-pointer group"
-                    >
-                        <div className="w-28 h-28 rounded-full bg-emerald-50/70 border border-emerald-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-emerald-100/70 transition duration-200">
-                            <DollarSign className="w-12 h-12 text-emerald-600 stroke-[1.5]" />
-                        </div>
-                        <h4 className="text-sm font-semibold text-gray-800 leading-snug px-2 min-h-[2.5rem] flex items-center justify-center">
-                            Finance & Consulting
-                        </h4>
-                        <span className="text-[11px] font-bold text-cyan-500 tracking-wider group-hover:underline mt-1">
-                            EXPLORE NOW
-                        </span>
-                    </div>
-
-                    <div
-                        onClick={() => setSelectedDomain('Marketing')}
-                        className="flex flex-col items-center text-center cursor-pointer group"
-                    >
-                        <div className="w-28 h-28 rounded-full bg-rose-50/70 border border-rose-100 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-rose-100/70 transition duration-200">
-                            <Lightbulb className="w-12 h-12 text-rose-600 stroke-[1.5]" />
-                        </div>
-                        <h4 className="text-sm font-semibold text-gray-800 leading-snug px-2 min-h-[2.5rem] flex items-center justify-center">
-                            Marketing & Sales
-                        </h4>
-                        <span className="text-[11px] font-bold text-cyan-500 tracking-wider group-hover:underline mt-1">
-                            EXPLORE NOW
-                        </span>
-                    </div>
-                </div>
-            </section>
-
             {/* Specialized Career Guidance Mentors Section */}
             <section className="space-y-4">
                 <div>
@@ -623,22 +513,6 @@ function LearnerDashboardView({
                     <p className="text-xs text-gray-500 font-medium mt-0.5">
                         Find experienced career leaders across all fields
                     </p>
-                </div>
-
-                {/* Domain Pills Filter */}
-                <div className="flex items-center space-x-2 overflow-x-auto scrollbar-none py-1">
-                    {allDomains.map((domain) => (
-                        <button
-                            key={domain}
-                            onClick={() => setSelectedDomain(domain)}
-                            className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${selectedDomain === domain
-                                ? 'bg-blue-600 text-white shadow-xs'
-                                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
-                                }`}
-                        >
-                            {domain}
-                        </button>
-                    ))}
                 </div>
 
                 {/* Mentors Grid */}
@@ -654,7 +528,6 @@ function LearnerDashboardView({
                 ) : mentors.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                         <p className="text-sm font-bold text-gray-700">No mentors found</p>
-                        <p className="text-xs text-gray-500 mt-1">Try selecting a different domain or clearing search filters.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-2">
@@ -713,16 +586,68 @@ function MentorDashboardView({
     newSlotDate,
     setNewSlotDate,
     newSlotTime,
-    setNewSlotTime,
-    reviews
+    setNewSlotTime
 }) {
     const [bookings, setBookings] = useState([]);
     const [bookingsLoading, setBookingsLoading] = useState(false);
     const [bookingsError, setBookingsError] = useState(null);
 
+    const [launchingBookingId, setLaunchingBookingId] = useState(null);
+    const [meetingErrors, setMeetingErrors] = useState({});
+
     const [slotSubmitError, setSlotSubmitError] = useState(null);
     const [slotSuccess, setSlotSuccess] = useState(null);
 
+    // Initial Dashboard Loading State
+    const [isDashboardLoading, setIsDashboardLoading] = useState(true);
+
+    // Google Calendar State
+    const [isConnectingGoogle, setIsConnectingGoogle] = useState(false);
+    const [googleConnected, setGoogleConnected] = useState(false);
+    const [googleConnectError, setGoogleConnectError] = useState("");
+
+    // Professional info
+    const [professional, setProfessional] = useState(null);
+
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [slotIdToDelete, setSlotIdToDelete] = useState(null);
+
+    // 1. Initial Load: Check Calendar Connection and Load Slots Together
+    useEffect(() => {
+        const initializeDashboard = async () => {
+            setIsDashboardLoading(true);
+            try {
+                const profRes = await axios.get(
+                    `${import.meta.env.VITE_BACKEND_URL}/api/professional/me`,
+                    { withCredentials: true }
+                );
+
+                const profData = profRes.data?.professional || profRes.data;
+                setProfessional(profData);
+
+                const isConnected =
+                    profData?.googleCalendarConnected == 1 ||
+                    profData?.googleCalendarConnected === true;
+
+                setGoogleConnected(isConnected);
+
+                const slotsRes = await axios.get(
+                    `${import.meta.env.VITE_BACKEND_URL}/api/slots/me`,
+                    { withCredentials: true }
+                );
+                setMentorSlots(slotsRes.data?.slots || []);
+            } catch (error) {
+                console.error("Dashboard initialization error:", error);
+                setGoogleConnected(false);
+            } finally {
+                setIsDashboardLoading(false);
+            }
+        };
+
+        initializeDashboard();
+    }, [setMentorSlots]);
+
+    // 2. Fetch Bookings Independently
     useEffect(() => {
         const fetchProfessionalBookings = async () => {
             setBookingsLoading(true);
@@ -732,25 +657,61 @@ function MentorDashboardView({
                     `${import.meta.env.VITE_BACKEND_URL}/api/professional/bookings`,
                     { withCredentials: true }
                 );
-                console.log("professional bookings:", response);
+
+                console.log("mentor bookings:", response);
                 setBookings(response.data?.bookings || []);
             } catch (err) {
-                console.error('Error fetching professional bookings:', err);
                 setBookingsError("Failed to load bookings. Please try again.");
             } finally {
                 setBookingsLoading(false);
             }
         };
-
         fetchProfessionalBookings();
     }, []);
 
-    const handleLaunchMeeting = (bookingId) => {
-        setBookings(prevBookings =>
-            prevBookings.map(b =>
-                b.booking_id === bookingId ? { ...b, isLaunched: true } : b
-            )
-        );
+    // Handles starting the meeting via API call for Professional
+    const handleLaunchMeeting = async (bookingId) => {
+        setLaunchingBookingId(bookingId);
+        setMeetingErrors(prev => ({ ...prev, [bookingId]: null }));
+
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/bookings/${bookingId}/start-meeting`,
+                {},
+                { withCredentials: true }
+            );
+
+            // Extract host_meeting_link returned from backend API call
+            const hostMeetingLink = response.data?.host_meeting_link || response.data?.meetingLink || response.data?.meet_link;
+
+            // Update state with returned host link and started status
+            setBookings(prevBookings =>
+                prevBookings.map(b =>
+                    b.booking_id === bookingId
+                        ? {
+                              ...b,
+                              isLaunched: true,
+                              host_meeting_link: hostMeetingLink || b.host_meeting_link,
+                              meet_link: response.data?.meet_link || b.meet_link,
+                              booking_status: 'meeting_started'
+                          }
+                        : b
+                )
+            );
+
+            // Open host link in browser window for the professional
+            if (hostMeetingLink) {
+                window.open(hostMeetingLink, '_blank');
+            }
+        } catch (error) {
+            console.error("Error launching meeting:", error);
+            const errMsg =
+                error?.response?.data?.message ||
+                "Failed to start the meeting. Please try again.";
+            setMeetingErrors(prev => ({ ...prev, [bookingId]: errMsg }));
+        } finally {
+            setLaunchingBookingId(null);
+        }
     };
 
     useEffect(() => {
@@ -765,32 +726,6 @@ function MentorDashboardView({
         };
     }, [slotSubmitError, slotSuccess]);
 
-    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-    const [slotIdToDelete, setSlotIdToDelete] = useState(null);
-
-    const fetchMentorSlots = async () => {
-        try {
-            const response = await axios.get(
-                `${import.meta.env.VITE_BACKEND_URL}/api/slots/me`,
-                { withCredentials: true }
-            );
-
-            const slots = response.data.slots || [];
-            setMentorSlots(slots);
-        } catch (error) {
-            setSlotSuccess(null);
-            setSlotSubmitError(
-                error?.response?.data?.message ||
-                error?.response?.data?.errors?.[0]?.msg ||
-                "We were unable to fetch your available slots. Please try again shortly, or contact support if the problem persists."
-            );
-        }
-    };
-
-    useEffect(() => {
-        fetchMentorSlots();
-    }, []);
-
     const createSlotAPI = async (e) => {
         e.preventDefault();
         setSlotSuccess(null);
@@ -804,35 +739,32 @@ function MentorDashboardView({
                 },
                 { withCredentials: true }
             );
-
-            const createdSlot = response.data.slot ||
-            {
-                id: response.data.slot.id,
+            const createdSlot = response.data.slot || {
+                id: response.data.slot?.id,
                 date: newSlotDate,
                 time: newSlotTime,
-                status: response.data.slot.status
+                status: response.data.slot?.status
             };
-
             setMentorSlots([
                 ...mentorSlots,
                 {
                     slot_id: createdSlot.id || `ms-${Date.now()}`,
                     date: createdSlot.date || newSlotDate,
                     start_time: createdSlot.time || newSlotTime,
-                    status: createdSlot.status 
+                    status: createdSlot.status || 'Available'
                 }
             ]);
             setSlotSubmitError(null);
             setSlotSuccess(
                 response.data.message ||
-                "Slot added successfully. Students can now see this slot."
+                    "Slot added successfully. Students can now see this slot."
             );
         } catch (error) {
             setSlotSuccess(null);
             const message =
                 error?.response?.data?.message ||
                 error?.response?.data?.errors?.[0]?.msg ||
-                "There was an error while adding your slot. Please try again and ensure your selected time and date are valid.";
+                "There was an error while adding your slot. Please try again.";
             setSlotSubmitError(message);
         }
     };
@@ -849,17 +781,16 @@ function MentorDashboardView({
             setMentorSlots(mentorSlots.filter(slot => slot.slot_id !== slotIdToDelete));
             setDeleteModalOpen(false);
             setSlotIdToDelete(null);
-            setSlotSubmitError(null);
             setSlotSuccess(
                 response.data.message ||
-                "Slot deleted successfully. Your availability has been updated."
+                    "Slot deleted successfully. Your availability has been updated."
             );
         } catch (error) {
             setSlotSuccess(null);
             const message =
                 error?.response?.data?.message ||
                 error?.response?.data?.errors?.[0]?.msg ||
-                "Failed to delete this slot; please try again or refresh the page.";
+                "Failed to delete this slot; please try again.";
             setSlotSubmitError(message);
             setDeleteModalOpen(false);
             setSlotIdToDelete(null);
@@ -926,9 +857,9 @@ function MentorDashboardView({
                 </div>
             </section>
 
-            {/* Main Content Area */}
+            {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Bookings & Reviews Column */}
+                {/* Bookings Column */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* Mentor Upcoming Bookings */}
                     <section className="bg-white rounded-2xl p-6 shadow-xs border border-gray-200 space-y-4">
@@ -948,39 +879,9 @@ function MentorDashboardView({
                             error={bookingsError}
                             isMentor={true}
                             onLaunchMeeting={handleLaunchMeeting}
+                            launchingBookingId={launchingBookingId}
+                            meetingErrors={meetingErrors}
                         />
-                    </section>
-
-                    {/* Student Reviews */}
-                    <section className="bg-white rounded-2xl p-6 shadow-xs border border-gray-200 space-y-4">
-                        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                            <div>
-                                <h2 className="text-base font-extrabold text-black">Recent Student Reviews</h2>
-                                <p className="text-xs text-gray-500">Feedback from your mentorship platform activities</p>
-                            </div>
-                            <Award className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {reviews.map((rev) => (
-                                <div key={rev.id} className="p-4 bg-gray-50 rounded-2xl border border-gray-200 flex flex-col justify-between space-y-3">
-                                    <p className="text-xs text-gray-700 italic leading-relaxed">"{rev.comment}"</p>
-                                    <div className="flex items-center justify-between pt-2 border-t border-gray-200/60">
-                                        <div className="flex items-center space-x-2">
-                                            <img src={rev.studentAvatar} alt={rev.studentName} className="w-7 h-7 rounded-full object-cover" />
-                                            <div>
-                                                <p className="text-xs font-bold text-black leading-none">{rev.studentName}</p>
-                                                <span className="text-[10px] text-gray-400">{rev.date}</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex text-amber-500">
-                                            {[...Array(rev.rating)].map((_, i) => (
-                                                <Star key={i} className="w-3 h-3 fill-amber-500" />
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
                     </section>
                 </div>
 
@@ -1001,147 +902,153 @@ function MentorDashboardView({
                         </span>
                     </div>
 
-                    {/* Add Slot Form */}
-                    <form
-                        onSubmit={createSlotAPI}
-                        className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200"
-                    >
-                        <p className="text-xs font-bold uppercase tracking-wider text-gray-700">Add New Slot</p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-2">
-                                    <span className="flex items-center space-x-1">
-                                        <Calendar className="inline w-3.5 h-3.5 text-blue-600" />
-                                        <span>Select Date</span>
-                                    </span>
-                                </label>
-                                <input
-                                    type="date"
-                                    required
-                                    value={newSlotDate}
-                                    onChange={(e) => setNewSlotDate(e.target.value)}
-                                    className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-600 outline-none transition text-black shadow-sm placeholder:text-gray-400"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-2">
-                                    <span className="flex items-center space-x-1">
-                                        <Clock className="inline w-3.5 h-3.5 text-blue-600" />
-                                        <span>Select Time Slot</span>
-                                    </span>
-                                </label>
-                                <select
-                                    value={newSlotTime}
-                                    onChange={(e) => setNewSlotTime(e.target.value)}
-                                    className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-600 outline-none transition text-black shadow-sm cursor-pointer"
-                                >
-                                    <option disabled value="">Choose a time...</option>
-                                    <option value="00:00:00">00:00</option>
-                                    <option value="01:00:00">01:00</option>
-                                    <option value="02:00:00">02:00</option>
-                                    <option value="03:00:00">03:00</option>
-                                    <option value="04:00:00">04:00</option>
-                                    <option value="05:00:00">05:00</option>
-                                    <option value="06:00:00">06:00</option>
-                                    <option value="07:00:00">07:00</option>
-                                    <option value="08:00:00">08:00</option>
-                                    <option value="09:00:00">09:00</option>
-                                    <option value="10:00:00">10:00</option>
-                                    <option value="11:00:00">11:00</option>
-                                    <option value="12:00:00">12:00</option>
-                                    <option value="13:00:00">13:00</option>
-                                    <option value="14:00:00">14:00</option>
-                                    <option value="16:00:00">16:00</option>
-                                    <option value="17:00:00">17:00</option>
-                                    <option value="18:00:00">18:00</option>
-                                    <option value="19:00:00">19:00</option>
-                                    <option value="20:00:00">20:00</option>
-                                    <option value="21:00:00">21:00</option>
-                                    <option value="22:00:00">22:00</option>
-                                    <option value="23:00:00">23:00</option>
-                                </select>
-                            </div>
+                    {isDashboardLoading ? (
+                        <div className="flex items-center justify-center py-10 bg-gray-50 rounded-xl border border-gray-200">
+                            <Loader2 className="w-6 h-6 text-blue-600 animate-spin mr-2" />
+                            <span className="text-xs font-semibold text-gray-600">Checking availability status...</span>
                         </div>
-
-                        <div className="flex items-center space-x-2 mb-2">
-                            {slotSubmitError && (
-                                <span className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-lg px-3 py-2 w-full block">
-                                    {slotSubmitError}
-                                </span>
-                            )}
-                            {!slotSubmitError && slotSuccess && (
-                                <span className="text-xs text-green-600 bg-green-50 border border-green-200 rounded-lg px-3 py-2 w-full block">
-                                    {slotSuccess}
-                                </span>
-                            )}
-                        </div>
-                        <button
-                            type="submit"
-                            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition shadow-xs"
-                        >
-                            <Plus className="w-4 h-4" />
-                            <span>Add Available Slot</span>
-                        </button>
-                    </form>
-
-                    {/* Slots List */}
-                    <div className="space-y-2.5">
-                        <div className="flex items-center justify-between">
-                            <p className="text-xs font-bold uppercase tracking-wider text-gray-700">Current Schedule</p>
-                            {mentorSlots.length > 3 && (
-                                <span className="text-[10px] text-gray-400 font-medium">Scroll for more</span>
-                            )}
-                        </div>
-                        {mentorSlots.length === 0 ? (
-                            <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-300 text-gray-500 text-xs">
-                                No availability slots configured
-                            </div>
-                        ) : (
-                            <div className="max-h-[260px] overflow-y-auto space-y-2.5 pr-1 transition-all">
-                                {mentorSlots.map((slot) => (
-                                    <div
-                                        key={slot.slot_id}
-                                        className="flex justify-between items-center p-3.5 border border-gray-200 rounded-xl text-xs bg-white hover:border-blue-500 transition shadow-2xs"
-                                    >
-                                        <div className="space-y-0.5">
-                                            <div className="flex items-center space-x-2">
-                                                <Calendar className="w-3.5 h-3.5 text-blue-600" />
-                                                <span className="font-bold text-black">{slot.date}</span>
-                                            </div>
-                                            <div className="flex items-center space-x-2">
-                                                <Clock className="w-3.5 h-3.5 text-gray-400" />
-                                                <span className="text-gray-700 font-medium">{slot.start_time}</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <span
-                                                className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition
-                                                    ${
-                                                        slot.status?.toLowerCase() === 'available'
-                                                            ? 'bg-green-100 text-green-800 border-green-300'
-                                                            : slot.status?.toLowerCase() === 'booked'
-                                                            ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
-                                                            : 'bg-gray-200 text-red-600 border-gray-300'
-                                                    }`} 
-                                            >
-                                                {slot.status}
+                    ) : (
+                        <>
+                            {/* Add Slot Form */}
+                            <form
+                                onSubmit={createSlotAPI}
+                                className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200"
+                            >
+                                <p className="text-xs font-bold uppercase tracking-wider text-gray-700">Add New Slot</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-700 mb-2">
+                                            <span className="flex items-center space-x-1">
+                                                <Calendar className="inline w-3.5 h-3.5 text-blue-600" />
+                                                <span>Select Date</span>
                                             </span>
-                                       
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDeleteClick(slot.slot_id)}
-                                                className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg transition"
-                                                title="Delete Slot"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
+                                        </label>
+                                        <input
+                                            type="date"
+                                            required
+                                            value={newSlotDate}
+                                            onChange={(e) => setNewSlotDate(e.target.value)}
+                                            className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-600 outline-none transition text-black shadow-sm"
+                                        />
                                     </div>
-                                ))}
+
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-700 mb-2">
+                                            <span className="flex items-center space-x-1">
+                                                <Clock className="inline w-3.5 h-3.5 text-blue-600" />
+                                                <span>Select Time Slot</span>
+                                            </span>
+                                        </label>
+                                        <select
+                                            value={newSlotTime}
+                                            onChange={(e) => setNewSlotTime(e.target.value)}
+                                            className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-600 outline-none transition text-black shadow-sm cursor-pointer"
+                                        >
+                                            <option disabled value="">Choose a time...</option>
+                                            <option value="01:00:00">01:00</option>
+                                            <option value="02:00:00">02:00</option>
+                                            <option value="03:00:00">03:00</option>
+                                            <option value="04:00:00">04:00</option>
+                                            <option value="05:00:00">05:00</option>
+                                            <option value="06:00:00">06:00</option>
+                                            <option value="07:00:00">07:00</option>
+                                            <option value="08:00:00">08:00</option>
+                                            <option value="09:00:00">09:00</option>
+                                            <option value="10:00:00">10:00</option>
+                                            <option value="11:00:00">11:00</option>
+                                            <option value="12:00:00">12:00</option>
+                                            <option value="13:00:00">13:00</option>
+                                            <option value="14:00:00">14:00</option>
+                                            <option value="16:00:00">16:00</option>
+                                            <option value="17:00:00">17:00</option>
+                                            <option value="18:00:00">18:00</option>
+                                            <option value="19:00:00">19:00</option>
+                                            <option value="20:00:00">20:00</option>
+                                            <option value="21:00:00">21:00</option>
+                                            <option value="22:00:00">22:00</option>
+                                            <option value="23:00:00">23:00</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center space-x-2 mb-2">
+                                    {slotSubmitError && (
+                                        <span className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-lg px-3 py-2 w-full block">
+                                            {slotSubmitError}
+                                        </span>
+                                    )}
+                                    {!slotSubmitError && slotSuccess && (
+                                        <span className="text-xs text-green-600 bg-green-50 border border-green-200 rounded-lg px-3 py-2 w-full block">
+                                            {slotSuccess}
+                                        </span>
+                                    )}
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition shadow-xs"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    <span>Add Available Slot</span>
+                                </button>
+                            </form>
+
+                            {/* Slots List */}
+                            <div className="space-y-2.5">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs font-bold uppercase tracking-wider text-gray-700">Current Schedule</p>
+                                    {mentorSlots.length > 3 && (
+                                        <span className="text-[10px] text-gray-400 font-medium">Scroll for more</span>
+                                    )}
+                                </div>
+                                {mentorSlots.length === 0 ? (
+                                    <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-300 text-gray-500 text-xs">
+                                        No availability slots configured
+                                    </div>
+                                ) : (
+                                    <div className="max-h-[260px] overflow-y-auto space-y-2.5 pr-1 transition-all">
+                                        {mentorSlots.map((slot) => (
+                                            <div
+                                                key={slot.slot_id}
+                                                className="flex justify-between items-center p-3.5 border border-gray-200 rounded-xl text-xs bg-white hover:border-blue-500 transition shadow-2xs"
+                                            >
+                                                <div className="space-y-0.5">
+                                                    <div className="flex items-center space-x-2">
+                                                        <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                                                        <span className="font-bold text-black">{slot.date}</span>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                                                        <span className="text-gray-700 font-medium">{slot.start_time}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <span
+                                                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition ${
+                                                            slot.status?.toLowerCase() === 'available'
+                                                                ? 'bg-green-100 text-green-800 border-green-300'
+                                                                : slot.status?.toLowerCase() === 'booked'
+                                                                ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
+                                                                : 'bg-gray-200 text-red-600 border-gray-300'
+                                                        }`}
+                                                    >
+                                                        {slot.status}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeleteClick(slot.slot_id)}
+                                                        className="p-1.5 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg transition"
+                                                        title="Delete Slot"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
+                        </>
+                    )}
 
                     {/* Delete Confirmation Modal */}
                     {deleteModalOpen && (
